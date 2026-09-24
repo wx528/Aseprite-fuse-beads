@@ -75,7 +75,19 @@ function Render.render(srcImg, matches, opts)
   local usage = Render.countUsage(matches)
   local statsRows = opts.showStats and #usage or 0
 
+  local maxLabelW = 0
+  if opts.showStats then
+    for _, u in ipairs(usage) do
+      local label = u.entry.code .. " X " .. u.count
+      local tw = Font.measure(label, fitScale(label, cell))
+      if tw > maxLabelW then maxLabelW = tw end
+    end
+  end
+
   local W = cols * cell + 1
+  if opts.showStats and #usage > 0 then
+    W = math.max(W, cell + 2 + maxLabelW)
+  end
   local H = rows * cell + 1 + statsRows * cell
   local out = Image(W, H, ColorMode.RGB)
   for px in out:pixels() do
@@ -125,7 +137,7 @@ function Render.render(srcImg, matches, opts)
           out:drawPixel(sx, rowTop + sy, swColor)
         end
       end
-      local label = u.entry.code .. " x " .. u.count
+      local label = u.entry.code .. " X " .. u.count
       local s = fitScale(label, cell)
       local tw, th = Font.measure(label, s)
       Font.draw(out, cell + 2, rowTop + math.floor((cell - th) / 2), label, s, black())

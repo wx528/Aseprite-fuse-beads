@@ -47,7 +47,7 @@ end
 
 local okSave, err = pcall(function()
   local out = Render.render(flat, matches, {
-    cell = math.max(8, math.floor(data.cell)),
+    cell = math.max(8, math.floor(tonumber(data.cell) or 32)),
     beadRatio = data.bead / 100,
     showStats = data.stats,
   })

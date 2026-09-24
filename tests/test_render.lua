@@ -37,3 +37,8 @@ local out2 = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats
 eq(out2.height, 33 + 2 * 16, "stats adds one row per used color")
 local swatch = out2:getPixel(7, 41)
 eq(app.pixelColor.rgbaR(swatch), 255, "first stats swatch is red")
+
+local Font = dofile(here .. "/../src/font.lua")
+local out3 = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true })
+local labelW = select(1, Font.measure("A1 X 2", 1))
+eq(out3.width, math.max(33, 16 + 2 + labelW), "stats width accommodates label")
