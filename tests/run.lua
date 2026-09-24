@@ -19,6 +19,7 @@ end
 
 local files = {
   "test_smoke.lua",
+  "test_palette.lua",
 }
 
 for _, f in ipairs(files) do
