@@ -22,6 +22,7 @@ local files = {
   "test_palette.lua",
   "test_color.lua",
   "test_font.lua",
+  "test_render.lua",
 }
 
 for _, f in ipairs(files) do
