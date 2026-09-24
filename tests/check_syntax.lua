@@ -1,0 +1,6 @@
+local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
+dofile(here .. "/../src/color.lua")
+dofile(here .. "/../src/font.lua")
+dofile(here .. "/../src/render.lua")
+dofile(here .. "/../src/palette_mard.lua")
+print("SYNTAX OK")
