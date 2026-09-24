@@ -2,40 +2,50 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Aseprite Lua 脚本，把当前 sprite 导出为拼豆图�?PNG（圆�?+ MARD 色号标注 + 用量统计）�?
-**Architecture:** �?Lua 模块按职责拆分（色板数据 / 颜色匹配 / 位图字体 / 渲染），入口脚本�?`dofile` 按自身路径加载同级模块。测试通过 `Aseprite.exe -b --script tests/run.lua` 无头运行，运行器输出 `ALL TESTS PASSED` 判定成功�?
-**Tech Stack:** Aseprite 1.3.18.6 内嵌 Lua 5.4，无外部依赖�?
+**Goal:** Aseprite Lua 脚本，把当前 sprite 导出为拼豆图纸 PNG（圆豆 + MARD 色号标注 + 用量统计）。
+
+**Architecture:** 纯 Lua 模块按职责拆分（色板数据 / 颜色匹配 / 位图字体 / 渲染），入口脚本用 `dofile` 按自身路径加载同级模块。测试通过 `Aseprite.exe -b --script tests/run.lua` 无头运行，运行器输出 `ALL TESTS PASSED` 判定成功。
+
+**Tech Stack:** Aseprite 1.3.18.6 内嵌 Lua 5.4，无外部依赖。
+
 ## Global Constraints
 
 - Aseprite 路径：`D:\SteamLibrary\steamapps\common\Aseprite\Aseprite.exe`（测试用它无头运行）
-- 拿不到进程退出码：测试运行器必须打印 `ALL TESTS PASSED` �?`TESTS FAILED`，以输出文本为准
-- 模块加载一律用 `debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")` 取自身目�?+ `dofile`，不�?`require`
-- 颜色值一律用 `app.pixelColor.rgba(r,g,b,a)` 构造，分量�?`app.pixelColor.rgbaR/G/B/A` 读取
+- 拿不到进程退出码：测试运行器必须打印 `ALL TESTS PASSED` 或 `TESTS FAILED`，以输出文本为准
+- 模块加载一律用 `debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")` 取自身目录 + `dofile`，不用 `require`
+- 颜色值一律用 `app.pixelColor.rgba(r,g,b,a)` 构造，分量用 `app.pixelColor.rgbaR/G/B/A` 读取
 - 每个模块文件 `return` 一个表作为公开接口
 - 代码不写注释
 
 ## 文件结构
 
-- `src/palette_mard.lua` �?MARD 色号表，return 数组，元�?`{ code="A1", name="...", rgb={r=,g=,b=} }`
-- `src/color.lua` �?`Color.rgbToLab(r,g,b)->l,a,b`、`Color.nearest(palette,r,g,b)->entry,isExact`
-- `src/font.lua` �?`Font.GLYPHS`、`Font.measure(text,scale)->w,h`、`Font.draw(img,x,y,text,scale,color)`
-- `src/render.lua` �?`Render.countUsage(matches)->list`、`Render.render(srcImg,matches,opts)->outImg`，opts = `{ cell=32, beadRatio=0.9, showStats=true }`
-- `fuse-beads-export.lua` �?入口：对话框 + �?sprite + 调用渲染 + 保存（放仓库根目录，方便拷进 Aseprite 脚本目录�?- `tests/run.lua` �?测试运行器，dofile 各测试文�?- `tests/gen_fixtures.lua` �?生成手动验收用的测试�?PNG
-- `run-tests.ps1` �?�?Aseprite 无头�?tests/run.lua，按输出判成�?
-matches 约定：`matches[y][x]`�? 起）= 色板条目�?�?`nil`（透明留空）�?
+- `src/palette_mard.lua` — MARD 色号表，return 数组，元素 `{ code="A1", name="...", rgb={r=,g=,b=} }`
+- `src/color.lua` — `Color.rgbToLab(r,g,b)->l,a,b`、`Color.nearest(palette,r,g,b)->entry,isExact`
+- `src/font.lua` — `Font.GLYPHS`、`Font.measure(text,scale)->w,h`、`Font.draw(img,x,y,text,scale,color)`
+- `src/render.lua` — `Render.countUsage(matches)->list`、`Render.render(srcImg,matches,opts)->outImg`，opts = `{ cell=32, beadRatio=0.9, showStats=true }`
+- `fuse-beads-export.lua` — 入口：对话框 + 读 sprite + 调用渲染 + 保存（放仓库根目录，方便拷进 Aseprite 脚本目录）
+- `tests/run.lua` — 测试运行器，dofile 各测试文件
+- `tests/gen_fixtures.lua` — 生成手动验收用的测试图 PNG
+- `run-tests.ps1` — 调 Aseprite 无头跑 tests/run.lua，按输出判成败
+
+matches 约定：`matches[y][x]`（1 起）= 色板条目表 或 `nil`（透明留空）。
+
 ---
 
-### Task 1: 项目骨架 + 测试运行�?
+### Task 1: 项目骨架 + 测试运行器
+
 **Files:**
 - Create: `tests/run.lua`
 - Create: `tests/test_smoke.lua`
 - Create: `run-tests.ps1`
 
 **Interfaces:**
-- Produces: 全局函数 `ok(cond, msg)`、`eq(got, want, msg)` 供所有后续测试文件使用；`run-tests.ps1` 是后续所有任务的测试命令�?
-- [ ] **Step 1: 写测试运行器和冒烟测�?*
+- Produces: 全局函数 `ok(cond, msg)`、`eq(got, want, msg)` 供所有后续测试文件使用；`run-tests.ps1` 是后续所有任务的测试命令。
 
-`tests/run.lua`�?
+- [ ] **Step 1: 写测试运行器和冒烟测试**
+
+`tests/run.lua`：
+
 ```lua
 local src = debug.getinfo(1, "S").source:sub(2)
 local dir = src:match("^(.*)[/\\]")
@@ -77,12 +87,14 @@ else
 end
 ```
 
-`tests/test_smoke.lua`�?
+`tests/test_smoke.lua`：
+
 ```lua
 eq(1 + 1, 2, "smoke")
 ```
 
-`run-tests.ps1`�?
+`run-tests.ps1`：
+
 ```powershell
 $out = & "D:\SteamLibrary\steamapps\common\Aseprite\Aseprite.exe" -b --script "$PSScriptRoot\tests\run.lua" 2>&1 | Out-String
 $out
@@ -92,7 +104,7 @@ if ($out -match "ALL TESTS PASSED") { exit 0 } else { exit 1 }
 - [ ] **Step 2: 跑测试确认通过**
 
 Run: `powershell -ExecutionPolicy Bypass -File run-tests.ps1`
-Expected: 输出�?`passed=1 failed=0` �?`ALL TESTS PASSED`，退出码 0
+Expected: 输出含 `passed=1 failed=0` 和 `ALL TESTS PASSED`，退出码 0
 
 - [ ] **Step 3: Commit**
 
@@ -107,13 +119,16 @@ git commit -m "Add headless test harness"
 
 **Files:**
 - Create: `src/palette_mard.lua`
-- Modify: `tests/run.lua`（把 `"test_palette.lua"` 加进 files 列表�?- Create: `tests/test_palette.lua`
+- Modify: `tests/run.lua`（把 `"test_palette.lua"` 加进 files 列表）
+- Create: `tests/test_palette.lua`
 
 **Interfaces:**
-- Produces: `palette_mard.lua` return 数组；元�?`{ code=string, name=string, rgb={r=0..255, g=0..255, b=0..255} }`，code 全局唯一�?
-- [ ] **Step 1: 写失败测�?*
+- Produces: `palette_mard.lua` return 数组；元素 `{ code=string, name=string, rgb={r=0..255, g=0..255, b=0..255} }`，code 全局唯一。
 
-`tests/test_palette.lua`�?
+- [ ] **Step 1: 写失败测试**
+
+`tests/test_palette.lua`：
+
 ```lua
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 local palette = dofile(here .. "/../src/palette_mard.lua")
@@ -134,7 +149,8 @@ for _, e in ipairs(palette) do
 end
 ```
 
-`tests/run.lua` �?files 改为�?
+`tests/run.lua` 的 files 改为：
+
 ```lua
 local files = {
   "test_smoke.lua",
@@ -142,13 +158,14 @@ local files = {
 }
 ```
 
-- [ ] **Step 2: 跑测试确认失�?*
+- [ ] **Step 2: 跑测试确认失败**
 
 Run: `powershell -ExecutionPolicy Bypass -File run-tests.ps1`
-Expected: `TESTS FAILED`，含 `ERROR in test_palette.lua`（文件不存在�?
-- [ ] **Step 3: 写色板起始数�?*
+Expected: `TESTS FAILED`，含 `ERROR in test_palette.lua`（文件不存在）
 
-`src/palette_mard.lua`（起�?16 色，RGB 为近似值，正式使用前按实体色卡核对，见 Task 7）：
+- [ ] **Step 3: 写色板起始数据**
+
+`src/palette_mard.lua`（起始 16 色，RGB 为近似值，正式使用前按实体色卡核对，见 Task 7）：
 
 ```lua
 return {
@@ -187,16 +204,21 @@ git commit -m "Add MARD palette starter data"
 
 ---
 
-### Task 3: 颜色匹配（RGB→Lab 最近邻�?
+### Task 3: 颜色匹配（RGB→Lab 最近邻）
+
 **Files:**
 - Create: `src/color.lua`
-- Modify: `tests/run.lua`（files �?`"test_color.lua"`�?- Create: `tests/test_color.lua`
+- Modify: `tests/run.lua`（files 加 `"test_color.lua"`）
+- Create: `tests/test_color.lua`
 
 **Interfaces:**
-- Consumes: Task 2 的色板条目格式�?- Produces: `Color.rgbToLab(r,g,b)->l,a,b`；`Color.nearest(palette,r,g,b)->entry,isExact`。Task 5�? 依赖这两个签名�?
-- [ ] **Step 1: 写失败测�?*
+- Consumes: Task 2 的色板条目格式。
+- Produces: `Color.rgbToLab(r,g,b)->l,a,b`；`Color.nearest(palette,r,g,b)->entry,isExact`。Task 5、6 依赖这两个签名。
 
-`tests/test_color.lua`�?
+- [ ] **Step 1: 写失败测试**
+
+`tests/test_color.lua`：
+
 ```lua
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 local Color = dofile(here .. "/../src/color.lua")
@@ -223,14 +245,15 @@ local e3 = Color.nearest(pal, 20, 20, 240)
 eq(e3.code, "X2", "near blue maps to blue")
 ```
 
-- [ ] **Step 2: 跑测试确认失�?*
+- [ ] **Step 2: 跑测试确认失败**
 
 Run: `powershell -ExecutionPolicy Bypass -File run-tests.ps1`
 Expected: `TESTS FAILED`，`ERROR in test_color.lua`
 
 - [ ] **Step 3: 实现 color.lua**
 
-`src/color.lua`�?
+`src/color.lua`：
+
 ```lua
 local Color = {}
 
@@ -307,13 +330,16 @@ git commit -m "Add RGB to Lab nearest color matching"
 
 **Files:**
 - Create: `src/font.lua`
-- Modify: `tests/run.lua`（files �?`"test_font.lua"`�?- Create: `tests/test_font.lua`
+- Modify: `tests/run.lua`（files 加 `"test_font.lua"`）
+- Create: `tests/test_font.lua`
 
 **Interfaces:**
-- Produces: `Font.measure(text, scale)->w,h`；`Font.draw(img, x, y, text, scale, color)`�?x,y) 为左上角；`Font.GLYPHS` 键为单字符字符串，值为 5 �?× 3 列的 "0"/"1" 字符串数组。Task 5 依赖�?
-- [ ] **Step 1: 写失败测�?*
+- Produces: `Font.measure(text, scale)->w,h`；`Font.draw(img, x, y, text, scale, color)`，(x,y) 为左上角；`Font.GLYPHS` 键为单字符字符串，值为 5 行 × 3 列的 "0"/"1" 字符串数组。Task 5 依赖。
 
-`tests/test_font.lua`�?
+- [ ] **Step 1: 写失败测试**
+
+`tests/test_font.lua`：
+
 ```lua
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 local Font = dofile(here .. "/../src/font.lua")
@@ -339,14 +365,15 @@ for ch in ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):gmatch(".") do
 end
 ```
 
-- [ ] **Step 2: 跑测试确认失�?*
+- [ ] **Step 2: 跑测试确认失败**
 
 Run: `powershell -ExecutionPolicy Bypass -File run-tests.ps1`
 Expected: `TESTS FAILED`，`ERROR in test_font.lua`
 
 - [ ] **Step 3: 实现 font.lua**
 
-`src/font.lua`�?
+`src/font.lua`：
+
 ```lua
 local Font = {}
 
@@ -435,16 +462,21 @@ git commit -m "Add 3x5 bitmap font"
 
 ---
 
-### Task 5: 图纸渲染（网�?+ 圆豆 + 色号 + 用量统计�?
+### Task 5: 图纸渲染（网格 + 圆豆 + 色号 + 用量统计）
+
 **Files:**
 - Create: `src/render.lua`
-- Modify: `tests/run.lua`（files �?`"test_render.lua"`�?- Create: `tests/test_render.lua`
+- Modify: `tests/run.lua`（files 加 `"test_render.lua"`）
+- Create: `tests/test_render.lua`
 
 **Interfaces:**
-- Consumes: `Font.draw` / `Font.measure`（Task 4）；Task 2 色板条目格式�?- Produces: `Render.countUsage(matches)->list`（元�?`{ entry=条目, count=数字 }`，按 count 降序）；`Render.render(srcImg, matches, opts)->Image`，opts = `{ cell=int, beadRatio=0..1, showStats=bool }`。Task 6 依赖这两个签名�?
-- [ ] **Step 1: 写失败测�?*
+- Consumes: `Font.draw` / `Font.measure`（Task 4）；Task 2 色板条目格式。
+- Produces: `Render.countUsage(matches)->list`（元素 `{ entry=条目, count=数字 }`，按 count 降序）；`Render.render(srcImg, matches, opts)->Image`，opts = `{ cell=int, beadRatio=0..1, showStats=bool }`。Task 6 依赖这两个签名。
 
-`tests/test_render.lua`�?
+- [ ] **Step 1: 写失败测试**
+
+`tests/test_render.lua`：
+
 ```lua
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 local Render = dofile(here .. "/../src/render.lua")
@@ -487,14 +519,15 @@ local swatch = out2:getPixel(7, 41)
 eq(app.pixelColor.rgbaR(swatch), 255, "first stats swatch is red")
 ```
 
-- [ ] **Step 2: 跑测试确认失�?*
+- [ ] **Step 2: 跑测试确认失败**
 
 Run: `powershell -ExecutionPolicy Bypass -File run-tests.ps1`
 Expected: `TESTS FAILED`，`ERROR in test_render.lua`
 
 - [ ] **Step 3: 实现 render.lua**
 
-`src/render.lua`�?
+`src/render.lua`：
+
 ```lua
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 local Font = dofile(here .. "/font.lua")
@@ -650,15 +683,21 @@ git commit -m "Add pattern board rendering with usage stats"
 
 ---
 
-### Task 6: 入口脚本（对话框 + 接线�?
-**Files:**
-- Create: `fuse-beads-export.lua`（仓库根目录�?
-**Interfaces:**
-- Consumes: `Color.nearest`、`Render.render`、Task 2 色板�?- Produces: 用户可运行的脚本。无代码接口被后续任务依赖�?
-说明：对话框无法在无头模式测试，本任务的验证是代码审�?+ Task 7 的手动验收�?
-- [ ] **Step 1: 写入口脚�?*
+### Task 6: 入口脚本（对话框 + 接线）
 
-`fuse-beads-export.lua`�?
+**Files:**
+- Create: `fuse-beads-export.lua`（仓库根目录）
+
+**Interfaces:**
+- Consumes: `Color.nearest`、`Render.render`、Task 2 色板。
+- Produces: 用户可运行的脚本。无代码接口被后续任务依赖。
+
+说明：对话框无法在无头模式测试，本任务的验证是代码审查 + Task 7 的手动验收。
+
+- [ ] **Step 1: 写入口脚本**
+
+`fuse-beads-export.lua`：
+
 ```lua
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 local Color = dofile(here .. "/src/color.lua")
@@ -667,7 +706,7 @@ local palette = dofile(here .. "/src/palette_mard.lua")
 
 local sprite = app.sprite
 if not sprite then
-  app.alert("没有打开�?sprite，请先打开一张图")
+  app.alert("没有打开的 sprite，请先打开一张图")
   return
 end
 
@@ -717,15 +756,16 @@ local okSave, err = pcall(function()
 end)
 
 if okSave then
-  app.alert("导出完成�? .. data.output)
+  app.alert("导出完成：" .. data.output)
 else
-  app.alert("导出失败�? .. tostring(err))
+  app.alert("导出失败：" .. tostring(err))
 end
 ```
 
-- [ ] **Step 2: 语法检查（无头加载，不进对话框�?*
+- [ ] **Step 2: 语法检查（无头加载，不进对话框）**
 
-临时验证脚本 `tests/check_syntax.lua`�?
+临时验证脚本 `tests/check_syntax.lua`：
+
 ```lua
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 dofile(here .. "/../src/color.lua")
@@ -736,9 +776,10 @@ print("SYNTAX OK")
 ```
 
 Run: `& "D:\SteamLibrary\steamapps\common\Aseprite\Aseprite.exe" -b --script tests\check_syntax.lua`
-Expected: 输出 `SYNTAX OK`（入口脚本本身依�?app.sprite �?Dialog，无法无头加载，仅检查模块）
+Expected: 输出 `SYNTAX OK`（入口脚本本身依赖 app.sprite 和 Dialog，无法无头加载，仅检查模块）
 
-另跑一遍全量测试确认无回归�?Run: `powershell -ExecutionPolicy Bypass -File run-tests.ps1`
+另跑一遍全量测试确认无回归：
+Run: `powershell -ExecutionPolicy Bypass -File run-tests.ps1`
 Expected: `ALL TESTS PASSED`
 
 - [ ] **Step 3: Commit**
@@ -757,7 +798,8 @@ git commit -m "Add export script entry point with dialog"
 
 - [ ] **Step 1: 写测试图生成脚本**
 
-`tests/gen_fixtures.lua`�?
+`tests/gen_fixtures.lua`：
+
 ```lua
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 local outDir = here .. "/../fixtures"
@@ -795,18 +837,23 @@ print("FIXTURES DONE")
 ```
 
 Run: `& "D:\SteamLibrary\steamapps\common\Aseprite\Aseprite.exe" -b --script tests\gen_fixtures.lua`
-Expected: 输出 `FIXTURES DONE`，`fixtures/` 下生�?4 �?PNG
+Expected: 输出 `FIXTURES DONE`，`fixtures/` 下生成 4 张 PNG
 
 - [ ] **Step 2: 手动验收（用户在 Aseprite UI 中操作）**
 
-1. 把仓库里 `fuse-beads-export.lua` �?`src/` 整个拷到 Aseprite 脚本目录（文�?> 脚本 > 打开脚本文件夹），然后在 文件 > 脚本 里运�?`fuse-beads-export`
-2. 依次打开 `fixtures/` 四张图运行导出，核对�?   - solid_red：全�?A1 圆豆，统计区只有一�?"A1 x 64"
-   - gradient：每格有圆豆和色号，无报�?   - transparent：棋盘格，透明格留白无豆无色号，统�?"F1 x 32"
-   - off_palette：全部映射到同一色号（肉眼判断接近紫�?G1�?   - �?sprite 时运�?�?�?没有打开�?sprite"
-3. 有问题回报修�?
+1. 把仓库里 `fuse-beads-export.lua` 和 `src/` 整个拷到 Aseprite 脚本目录（文件 > 脚本 > 打开脚本文件夹），然后在 文件 > 脚本 里运行 `fuse-beads-export`
+2. 依次打开 `fixtures/` 四张图运行导出，核对：
+   - solid_red：全图 A1 圆豆，统计区只有一行 "A1 x 64"
+   - gradient：每格有圆豆和色号，无报错
+   - transparent：棋盘格，透明格留白无豆无色号，统计 "F1 x 32"
+   - off_palette：全部映射到同一色号（肉眼判断接近紫色 G1）
+   - 无 sprite 时运行 → 弹"没有打开的 sprite"
+3. 有问题回报修复
+
 - [ ] **Step 3: 色卡数据核对（用户）**
 
-用户对照自己�?MARD/漫漫实体色卡，编�?`src/palette_mard.lua`：每行格�?`{ code = "色号", name = "名称", rgb = { r = R, g = G, b = B } }`，可增删行。改完跑 `run-tests.ps1` 确认数据格式合法�?
+用户对照自己的 MARD/漫漫实体色卡，编辑 `src/palette_mard.lua`：每行格式 `{ code = "色号", name = "名称", rgb = { r = R, g = G, b = B } }`，可增删行。改完跑 `run-tests.ps1` 确认数据格式合法。
+
 - [ ] **Step 4: Commit**
 
 ```bash
@@ -818,4 +865,5 @@ git commit -m "Add manual acceptance fixtures"
 
 ## 备注
 
-- 第二阶段（打�?`.aseprite-extension`）不在本计划内，脚本验收通过后另立计划�?- `fixtures/*.png` 是生成物，也可以选择加进 `.gitignore` 而不提交�?
+- 第二阶段（打包 `.aseprite-extension`）不在本计划内，脚本验收通过后另立计划。
+- `fixtures/*.png` 是生成物，也可以选择加进 `.gitignore` 而不提交。
