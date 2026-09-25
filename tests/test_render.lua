@@ -42,3 +42,7 @@ local Font = dofile(here .. "/../src/font.lua")
 local out3 = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true })
 local labelW = select(1, Font.measure("A1 X 2", 1))
 eq(out3.width, math.max(33, 16 + 2 + labelW), "stats width accommodates label")
+
+local big = Render.render(src, matches, { cell = 32, beadRatio = 0.9, showStats = false })
+local aboveText = big:getPixel(4, 19)
+ok(not (app.pixelColor.rgbaR(aboveText) == 255 and app.pixelColor.rgbaG(aboveText) == 255 and app.pixelColor.rgbaB(aboveText) == 255), "code text must not fill the bead at cell=32")

@@ -31,10 +31,12 @@ local function textColorFor(rgb)
 end
 
 local function fitScale(text, cell)
+  local maxW = math.floor(cell * 0.6)
+  local maxH = math.floor(cell * 0.4)
   local s = math.max(1, math.floor(cell / 8))
   while s > 1 do
     local w, h = Font.measure(text, s)
-    if w <= cell - 4 and h <= cell - 4 then
+    if w <= maxW and h <= maxH then
       return s
     end
     s = s - 1
