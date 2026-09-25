@@ -34,8 +34,8 @@ eq(app.pixelColor.rgbaR(emptyCell), 255, "transparent cell stays white")
 eq(app.pixelColor.rgbaG(emptyCell), 255, "transparent cell green white")
 
 local out2 = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(out2.height, 33 + 24, "stats one row of chip+count blocks")
-local swatch = out2:getPixel(7, 41)
+eq(out2.height, 33 + 2 * 10, "stats compact rows")
+local swatch = out2:getPixel(2, 36)
 eq(app.pixelColor.rgbaR(swatch), 255, "first stats swatch is red")
 
 local Font = dofile(here .. "/../src/font.lua")
@@ -52,7 +52,7 @@ local sparseUsage = Render.countUsage(sparse)
 eq(#sparseUsage, 2, "sparse matches: two colors counted")
 if #sparseUsage == 2 then eq(sparseUsage[1].count, 1, "sparse matches: count is 1") end
 local outSparse = Render.render(src, sparse, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(outSparse.height, 33 + 24, "sparse matches: stats row adds height")
+eq(outSparse.height, 33 + 2 * 10, "sparse matches: stats rows add height")
 
 local sqc = out:getPixel(1, 1)
 eq(app.pixelColor.rgbaG(sqc), 0, "square bead fills interior corner by default")
@@ -87,9 +87,9 @@ for i = 1, 7 do
 end
 local src7 = Image(7, 1, ColorMode.RGB)
 local out7 = Render.render(src7, m7, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(out7.height, 17 + 24, "stats row-major one row when entries fit")
-eq(app.pixelColor.rgbaR(out7:getPixel(5 * 16 + 2, 17 + 2)), 180, "6th entry chip at column 5 same row")
-eq(app.pixelColor.rgbaR(out2:getPixel(6, 50)), 0, "count drawn below chip")
+eq(out7.height, 17 + 3 * 10, "stats wraps to next row")
+eq(app.pixelColor.rgbaR(out7:getPixel(60, 29)), 180, "6th entry wraps to second row")
+eq(app.pixelColor.rgbaR(out2:getPixel(22, 35)), 0, "count inline after code")
 
 local wc = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = false, showCoords = true })
 eq(wc.width, 33 + 32, "coords add horizontal margin")
