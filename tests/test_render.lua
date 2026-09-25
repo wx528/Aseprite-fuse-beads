@@ -167,3 +167,8 @@ local tDefault = Render.render(srcB, mB, { cell = 32, showStats = false })
 local tBig = Render.render(srcB, mB, { cell = 32, showStats = false, textScale = 150 })
 eq(beadTextSpan(tDefault), 10, "default 3-char text height at cell 32")
 eq(beadTextSpan(tBig), 15, "textScale 150 enlarges 3-char code")
+
+local mnum = { { { code = "15179", name = "a", rgb = { r = 1, g = 1, b = 1 } }, { code = "9001", name = "b", rgb = { r = 2, g = 2, b = 2 } } } }
+local unum = Render.countUsage(mnum)
+eq(unum[1].entry.code, "9001", "numeric codes sorted numerically")
+eq(unum[2].entry.code, "15179", "numeric sort second")

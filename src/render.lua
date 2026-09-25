@@ -88,9 +88,14 @@ function Render.countUsage(matches)
     end
   end
   table.sort(order, function(a, b)
-    local la, na = a.entry.code:match("^(%a+)(%d+)$")
-    local lb, nb = b.entry.code:match("^(%a+)(%d+)$")
-    la, lb = la or a.entry.code, lb or b.entry.code
+    local ca, cb = a.entry.code, b.entry.code
+    local cna, cnb = tonumber(ca), tonumber(cb)
+    if cna and cnb then
+      return cna < cnb
+    end
+    local la, na = ca:match("^(%a+)(%d+)$")
+    local lb, nb = cb:match("^(%a+)(%d+)$")
+    la, lb = la or ca, lb or cb
     na, nb = tonumber(na) or 0, tonumber(nb) or 0
     if la ~= lb then
       return la < lb
@@ -143,7 +148,7 @@ function Render.render(srcImg, matches, opts)
     for _, u in ipairs(usage) do
       total = total + u.count
     end
-    local header = string.format("%dX%d | %d | %d | MARD", cols, rows, total, #usage)
+    local header = string.format("%dX%d | %d | %d | %s", cols, rows, total, #usage, opts.brand or "MARD")
     local hs = fitScale(header, cell, (W - ox - 2) / cell, 0.5)
     local hw, hh = Font.measure(header, hs)
     Font.draw(out, ox + 1, math.floor((headerH - hh) / 2), header, hs, black())

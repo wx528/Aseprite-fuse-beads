@@ -30,3 +30,7 @@ local browns = {
 }
 eq(Color.nearest(browns, 0xC3, 0x70, 0x20).code, "G19", "light orange-brown to G19")
 eq(Color.nearest(browns, 0x98, 0x4E, 0x16).code, "G7", "dark brown to G7")
+
+local c1 = Color.nearest(pal, 123, 45, 67)
+local c2 = Color.nearest(pal, 123, 45, 67)
+eq(c1.code, c2.code, "cached fuzzy result consistent")

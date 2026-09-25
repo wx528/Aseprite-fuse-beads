@@ -92,15 +92,20 @@ end
 function Color.nearest(palette, r, g, b)
   local cache = exactCache[palette]
   if not cache then
-    cache = {}
+    cache = { results = {} }
     for _, e in ipairs(palette) do
       cache[e.rgb.r .. "," .. e.rgb.g .. "," .. e.rgb.b] = e
     end
     exactCache[palette] = cache
   end
-  local exact = cache[r .. "," .. g .. "," .. b]
+  local key = r .. "," .. g .. "," .. b
+  local exact = cache[key]
   if exact then
     return exact, true
+  end
+  local cached = cache.results[key]
+  if cached then
+    return cached, false
   end
   local l1, a1, b1 = Color.rgbToLab(r, g, b)
   local best, bestD = nil, nil
@@ -113,6 +118,7 @@ function Color.nearest(palette, r, g, b)
       best, bestD = e, d
     end
   end
+  cache.results[key] = best
   return best, false
 end
 

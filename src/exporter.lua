@@ -1,7 +1,13 @@
 local here = debug.getinfo(1, "S").source:sub(2):match("^(.*)[/\\]")
 local Color = dofile(here .. "/color.lua")
 local Render = dofile(here .. "/render.lua")
-local palette = dofile(here .. "/palette_mard.lua")
+
+local BRANDS = {
+  { label = "MARD/漫漫", file = "palette_mard", ascii = "MARD" },
+  { label = "Perler", file = "palette_perler", ascii = "PERLER" },
+  { label = "Hama", file = "palette_hama", ascii = "HAMA" },
+  { label = "Artkal", file = "palette_artkal", ascii = "ARTKAL" },
+}
 
 return function()
   local sprite = app.sprite
@@ -28,9 +34,14 @@ return function()
     defaultName = app.fs.joinPath(app.fs.filePath(sprite.filename), app.fs.fileTitle(sprite.filename) .. "_pattern.png")
   end
 
+  local brandLabels = {}
+  for i, b in ipairs(BRANDS) do
+    brandLabels[i] = b.label
+  end
+
   local dlg = Dialog("导出拼豆图纸")
   dlg:file{ id = "output", label = "输出文件", save = true, filename = defaultName, filetypes = { "png" } }
-  dlg:combobox{ id = "brand", label = "色板", options = { "MARD/漫漫" }, option = "MARD/漫漫" }
+  dlg:combobox{ id = "brand", label = "色板", options = brandLabels, option = brandLabels[1] }
   dlg:combobox{ id = "shape", label = "豆子形状", options = { "方形", "圆形" }, option = "方形" }
   dlg:number{ id = "cell", label = "格子大小(px)", text = "32", decimals = 0 }
   dlg:slider{ id = "bead", label = "豆子直径(%)", min = 50, max = 100, value = 90 }
@@ -46,6 +57,14 @@ return function()
   if not data.ok then
     return
   end
+
+  local brand = BRANDS[1]
+  for _, b in ipairs(BRANDS) do
+    if b.label == data.brand then
+      brand = b
+    end
+  end
+  local palette = dofile(here .. "/" .. brand.file .. ".lua")
 
   local frame = app.frame and app.frame.frameNumber or 1
   local flat = Image(sprite.width, sprite.height, ColorMode.RGB)
@@ -72,6 +91,7 @@ return function()
       beadShape = data.shape == "圆形" and "circle" or "square",
       gridEvery = tonumber(data.gridEvery) or 5,
       textScale = tonumber(data.textSize) or 100,
+      brand = brand.ascii,
       showCoords = data.coords ~= false,
       showStats = showStats,
     })
