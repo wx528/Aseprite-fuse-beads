@@ -35,6 +35,7 @@ return function()
   dlg:number{ id = "cell", label = "格子大小(px)", text = "32", decimals = 0 }
   dlg:slider{ id = "bead", label = "豆子直径(%)", min = 50, max = 100, value = 90 }
   dlg:number{ id = "gridEvery", label = "分格线间隔(格)", text = "5", decimals = 0 }
+  dlg:slider{ id = "textSize", label = "色号字号(%)", min = 50, max = 150, value = 100 }
   dlg:check{ id = "coords", label = "四边序号", text = "", selected = true }
   dlg:check{ id = "stats", label = "包含用量统计", text = "", selected = true }
   dlg:button{ id = "ok", text = "导出", focus = true }
@@ -70,6 +71,7 @@ return function()
       beadRatio = (tonumber(data.bead) or 90) / 100,
       beadShape = data.shape == "圆形" and "circle" or "square",
       gridEvery = tonumber(data.gridEvery) or 5,
+      textScale = tonumber(data.textSize) or 100,
       showCoords = data.coords ~= false,
       showStats = showStats,
     })

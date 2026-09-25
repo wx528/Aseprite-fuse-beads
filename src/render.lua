@@ -65,8 +65,9 @@ local function fitScale(text, cell, wf, hf)
   return 1
 end
 
-local function drawCenteredText(img, text, cellX, cellY, cell, color)
-  local s = fitScale(text, cell)
+local function drawCenteredText(img, text, cellX, cellY, cell, color, scalePct)
+  local k = (scalePct or 100) / 100
+  local s = fitScale(text, cell, 0.8 * k, 0.4 * k)
   local w, h = Font.measure(text, s)
   local x = cellX + math.floor((cell - w) / 2)
   local y = cellY + math.floor((cell - h) / 2)
@@ -208,7 +209,7 @@ function Render.render(srcImg, matches, opts)
             end
           end
         end
-        drawCenteredText(out, e.code, ox + (cx - 1) * cell, oy + (cy - 1) * cell, cell, textColorFor(e.rgb))
+        drawCenteredText(out, e.code, ox + (cx - 1) * cell, oy + (cy - 1) * cell, cell, textColorFor(e.rgb), opts.textScale)
       end
     end
   end

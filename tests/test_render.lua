@@ -147,3 +147,23 @@ eq(app.pixelColor.rgbaR(out2:getPixel(3, 5)), 0, "header text drawn at top")
 local both = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true, showCoords = true })
 eq(app.pixelColor.rgbaR(both:getPixel(23, 21)), 0, "top coord label below header")
 eq(app.pixelColor.rgbaR(both:getPixel(18, 5)), 0, "header text above coord band")
+
+local srcB = Image(1, 1, ColorMode.RGB)
+local mB = { { { code = "A10", name = "x", rgb = { r = 200, g = 30, b = 30 } } } }
+local function beadTextSpan(img)
+  local minY, maxY = nil, nil
+  for y = 1, 30 do
+    for x = 1, 30 do
+      local p = img:getPixel(x, y)
+      if app.pixelColor.rgbaR(p) == 255 and app.pixelColor.rgbaG(p) == 255 and app.pixelColor.rgbaB(p) == 255 then
+        if not minY then minY = y end
+        maxY = y
+      end
+    end
+  end
+  return maxY - minY + 1
+end
+local tDefault = Render.render(srcB, mB, { cell = 32, showStats = false })
+local tBig = Render.render(srcB, mB, { cell = 32, showStats = false, textScale = 150 })
+eq(beadTextSpan(tDefault), 10, "default 3-char text height at cell 32")
+eq(beadTextSpan(tBig), 15, "textScale 150 enlarges 3-char code")
