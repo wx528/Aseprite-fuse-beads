@@ -46,3 +46,11 @@ eq(out3.width, math.max(33, 16 + 2 + labelW), "stats width accommodates label")
 local big = Render.render(src, matches, { cell = 32, beadRatio = 0.9, showStats = false })
 local aboveText = big:getPixel(4, 19)
 ok(not (app.pixelColor.rgbaR(aboveText) == 255 and app.pixelColor.rgbaG(aboveText) == 255 and app.pixelColor.rgbaB(aboveText) == 255), "code text must not fill the bead at cell=32")
+
+
+local sparse = { {}, { pal[1], pal[2] } }
+local sparseUsage = Render.countUsage(sparse)
+eq(#sparseUsage, 2, "sparse matches: two colors counted")
+if #sparseUsage == 2 then eq(sparseUsage[1].count, 1, "sparse matches: count is 1") end
+local outSparse = Render.render(src, sparse, { cell = 16, beadRatio = 0.9, showStats = true })
+eq(outSparse.height, 33 + 2 * 16, "sparse matches: stats rows add height")

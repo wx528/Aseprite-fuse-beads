@@ -54,9 +54,8 @@ end
 
 function Render.countUsage(matches)
   local byCode, order = {}, {}
-  for y = 1, #matches do
-    for x = 1, #matches[1] do
-      local e = matches[y][x]
+  for _, row in pairs(matches) do
+    for _, e in pairs(row) do
       if e then
         if not byCode[e.code] then
           byCode[e.code] = { entry = e, count = 0 }
