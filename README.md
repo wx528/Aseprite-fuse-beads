@@ -46,6 +46,11 @@
 
 打包扩展：改 `package.json` 版本号后运行 `powershell -ExecutionPolicy Bypass -File build-extension.ps1`。
 
+## 致谢
+
+- Perler / Hama / Artkal 色板数据来自 [maxcleme/beadcolors](https://github.com/maxcleme/beadcolors)（MIT License），感谢作者及数据贡献者。
+- MARD/漫漫色板 RGB 提取自官方色卡（见 `refs/colorcard-mard.jpg`）。
+
 ## License
 
 MIT

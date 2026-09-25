@@ -45,6 +45,11 @@ Tests: `powershell -ExecutionPolicy Bypass -File run-tests.ps1` (runs all assert
 
 Build extension: bump `version` in `package.json`, then `powershell -ExecutionPolicy Bypass -File build-extension.ps1`.
 
+## Acknowledgments
+
+- Perler / Hama / Artkal palette data comes from [maxcleme/beadcolors](https://github.com/maxcleme/beadcolors) (MIT License) — thanks to the author and data contributors.
+- MARD palette RGB values were sampled from the official color card (see `refs/colorcard-mard.jpg`).
+
 ## License
 
 MIT
