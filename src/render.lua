@@ -97,14 +97,20 @@ function Render.render(srcImg, matches, opts)
   local rowH = chip + 4
   local statsScale = math.max(1, math.floor(cell / 16))
   local entryW = 1
+  local boxW = 1
   local perRow = 1
+  local codeScale = 1
   if opts.showStats then
     local maxCntW = 0
+    codeScale = math.max(1, math.floor(chip / 8))
     for _, u in ipairs(usage) do
       local tw = Font.measure(tostring(u.count), statsScale)
       if tw > maxCntW then maxCntW = tw end
+      local s = fitScale(u.entry.code, chip, 0.875, 0.5)
+      if s < codeScale then codeScale = s end
     end
-    entryW = 2 + chip + 3 + maxCntW + 2
+    boxW = 2 + chip + 3 + maxCntW + 2
+    entryW = boxW + math.max(2, math.floor(cell / 8))
     perRow = math.max(1, math.floor((W - margin * 2) / entryW))
   end
   local statsRows = opts.showStats and math.ceil(#usage / perRow) or 0
@@ -207,7 +213,7 @@ function Render.render(srcImg, matches, opts)
   if opts.showStats then
     local top = oy + rows * cell + 1 + margin
     local cr = math.max(2, math.floor(rowH * 0.25))
-    local bw, bh = entryW - 2, rowH - 2
+    local bw, bh = boxW, rowH - 2
     local chipCr = math.floor(chip * 0.2)
     for i, u in ipairs(usage) do
       local col = (i - 1) % perRow
@@ -245,9 +251,8 @@ function Render.render(srcImg, matches, opts)
           end
         end
       end
-      local s = fitScale(u.entry.code, chip, 0.875, 0.5)
-      local tw, th = Font.measure(u.entry.code, s)
-      Font.draw(out, chipX + math.floor((chip - tw) / 2), chipY + math.floor((chip - th) / 2), u.entry.code, s, textColorFor(u.entry.rgb))
+      local tw, th = Font.measure(u.entry.code, codeScale)
+      Font.draw(out, chipX + math.floor((chip - tw) / 2), chipY + math.floor((chip - th) / 2), u.entry.code, codeScale, textColorFor(u.entry.rgb))
       local cnt = tostring(u.count)
       local cw, ch = Font.measure(cnt, statsScale)
       Font.draw(out, chipX + chip + 3, y0 + math.floor((bh - ch) / 2), cnt, statsScale, black())

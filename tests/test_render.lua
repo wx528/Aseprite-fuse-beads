@@ -88,7 +88,7 @@ end
 local src7 = Image(7, 1, ColorMode.RGB)
 local out7 = Render.render(src7, m7, { cell = 16, beadRatio = 0.9, showStats = true })
 eq(out7.height, 17 + 2 * 20, "stats wraps to next row")
-eq(app.pixelColor.rgbaR(out7:getPixel(29, 39)), 180, "6th entry wraps to second row")
+eq(app.pixelColor.rgbaR(out7:getPixel(31, 39)), 180, "6th entry wraps to second row")
 eq(app.pixelColor.rgbaR(out2:getPixel(21, 39)), 0, "count right of chip")
 do
   local p = out2:getPixel(7, 39)
@@ -110,3 +110,22 @@ eq(app.pixelColor.rgbaB(out2:getPixel(10, 33)), 0, "entry border is entry color"
 eq(app.pixelColor.rgbaR(out2:getPixel(0, 41)), 255, "entry border left edge")
 local corner = out2:getPixel(0, 33)
 ok(app.pixelColor.rgbaR(corner) == 255 and app.pixelColor.rgbaG(corner) == 255, "entry border corner is rounded")
+
+pal7[7].code = "A10"
+local out7b = Render.render(src7, m7, { cell = 16, beadRatio = 0.9, showStats = true })
+local function textRowSpan(img, x0, y0, w, h)
+  local minY, maxY = nil, nil
+  for y = y0 + 4, y0 + h - 5 do
+    for x = x0 + 4, x0 + w - 5 do
+      local p = img:getPixel(x, y)
+      if app.pixelColor.rgbaR(p) == 255 and app.pixelColor.rgbaG(p) == 255 and app.pixelColor.rgbaB(p) == 255 then
+        if not minY then minY = y end
+        maxY = y
+      end
+    end
+  end
+  if not minY then return 0 end
+  return maxY - minY + 1
+end
+eq(textRowSpan(out7b, 2, 18, 16, 16), textRowSpan(out7b, 58, 38, 16, 16), "2-char and 3-char codes same scale")
+eq(textRowSpan(out7b, 2, 18, 16, 16), 5, "code text height at cell 16")
