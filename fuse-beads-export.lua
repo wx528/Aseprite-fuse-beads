@@ -17,8 +17,10 @@ end
 local dlg = Dialog("导出拼豆图纸")
 dlg:file{ id = "output", label = "输出文件", save = true, filename = defaultName, filetypes = { "png" } }
 dlg:combobox{ id = "brand", label = "色板", options = { "MARD/漫漫" }, option = "MARD/漫漫" }
+dlg:combobox{ id = "shape", label = "豆子形状", options = { "方形", "圆形" }, option = "方形" }
 dlg:number{ id = "cell", label = "格子大小(px)", text = "32", decimals = 0 }
 dlg:slider{ id = "bead", label = "豆子直径(%)", min = 50, max = 100, value = 90 }
+dlg:number{ id = "gridEvery", label = "分格线间隔(格)", text = "5", decimals = 0 }
 dlg:check{ id = "stats", label = "包含用量统计", text = "", selected = true }
 dlg:button{ id = "ok", text = "导出", focus = true }
 dlg:button{ id = "cancel", text = "取消" }
@@ -50,7 +52,9 @@ local showStats = data.stats ~= false
 local okSave, err = pcall(function()
   local out = Render.render(flat, matches, {
     cell = math.max(8, math.floor(tonumber(data.cell) or 32)),
-    beadRatio = data.bead / 100,
+    beadRatio = (tonumber(data.bead) or 90) / 100,
+    beadShape = data.shape == "圆形" and "circle" or "square",
+    gridEvery = tonumber(data.gridEvery) or 5,
     showStats = showStats,
   })
   out:saveAs(data.output)

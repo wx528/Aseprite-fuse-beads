@@ -27,7 +27,7 @@ eq(app.pixelColor.rgbaR(bead), 255, "red bead center red channel")
 eq(app.pixelColor.rgbaB(bead), 0, "red bead center blue channel")
 
 local grid = out:getPixel(0, 0)
-eq(app.pixelColor.rgbaR(grid), 200, "grid line gray")
+eq(app.pixelColor.rgbaR(grid), 120, "border line is dark divider")
 
 local emptyCell = out:getPixel(8, 24)
 eq(app.pixelColor.rgbaR(emptyCell), 255, "transparent cell stays white")
@@ -54,3 +54,23 @@ eq(#sparseUsage, 2, "sparse matches: two colors counted")
 if #sparseUsage == 2 then eq(sparseUsage[1].count, 1, "sparse matches: count is 1") end
 local outSparse = Render.render(src, sparse, { cell = 16, beadRatio = 0.9, showStats = true })
 eq(outSparse.height, 33 + 2 * 16, "sparse matches: stats rows add height")
+
+local sqc = out:getPixel(1, 1)
+eq(app.pixelColor.rgbaG(sqc), 0, "square bead fills interior corner by default")
+
+local cir = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = false, beadShape = "circle" })
+local cc = cir:getPixel(1, 1)
+ok(app.pixelColor.rgbaR(cc) == 255 and app.pixelColor.rgbaG(cc) == 255, "circle bead leaves interior corner empty")
+
+local src10 = Image(10, 1, ColorMode.RGB)
+local m10 = { {} }
+for x = 1, 10 do m10[1][x] = pal[1] end
+local div = Render.render(src10, m10, { cell = 16, beadRatio = 0.9, showStats = false, gridEvery = 5 })
+eq(app.pixelColor.rgbaR(div:getPixel(48, 8)), 200, "normal grid line stays light")
+eq(app.pixelColor.rgbaR(div:getPixel(80, 8)), 120, "divider dark at multiple of 5")
+eq(app.pixelColor.rgbaR(div:getPixel(81, 8)), 120, "divider is 2px wide")
+eq(app.pixelColor.rgbaR(div:getPixel(160, 8)), 120, "right border is dark divider")
+
+local nodiv = Render.render(src10, m10, { cell = 16, beadRatio = 0.9, showStats = false, gridEvery = 0 })
+eq(app.pixelColor.rgbaR(nodiv:getPixel(80, 8)), 200, "gridEvery 0 disables interior divider")
+eq(app.pixelColor.rgbaR(nodiv:getPixel(0, 8)), 120, "borders stay dark when dividers disabled")

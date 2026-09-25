@@ -12,6 +12,13 @@ local function gridColor()
   return GRID
 end
 
+local DIVIDER = nil
+
+local function dividerColor()
+  if not DIVIDER then DIVIDER = app.pixelColor.rgba(120, 120, 120, 255) end
+  return DIVIDER
+end
+
 local function white()
   if not WHITE then WHITE = app.pixelColor.rgba(255, 255, 255, 255) end
   return WHITE
@@ -95,6 +102,12 @@ function Render.render(srcImg, matches, opts)
     px(white())
   end
 
+  local gridEvery = opts.gridEvery
+  if gridEvery == nil then gridEvery = 5 end
+  local function isDivider(i, n)
+    return i == 0 or i == n or (gridEvery >= 2 and i % gridEvery == 0)
+  end
+
   local grid = gridColor()
   for gx = 0, cols do
     for y = 0, rows * cell do
@@ -116,14 +129,50 @@ function Render.render(srcImg, matches, opts)
         local centerX = (cx - 1) * cell + math.floor(cell / 2)
         local centerY = (cy - 1) * cell + math.floor(cell / 2)
         local beadColor = app.pixelColor.rgba(e.rgb.r, e.rgb.g, e.rgb.b, 255)
-        for dy = -r, r do
-          for dx = -r, r do
-            if dx * dx + dy * dy <= r2 then
-              out:drawPixel(centerX + dx, centerY + dy, beadColor)
+        if opts.beadShape == "circle" then
+          for dy = -r, r do
+            for dx = -r, r do
+              if dx * dx + dy * dy <= r2 then
+                out:drawPixel(centerX + dx, centerY + dy, beadColor)
+              end
+            end
+          end
+        else
+          local x0 = (cx - 1) * cell + 1
+          local y0 = (cy - 1) * cell + 1
+          for py = y0, y0 + cell - 2 do
+            for px = x0, x0 + cell - 2 do
+              out:drawPixel(px, py, beadColor)
             end
           end
         end
         drawCenteredText(out, e.code, (cx - 1) * cell, (cy - 1) * cell, cell, textColorFor(e.rgb))
+      end
+    end
+  end
+
+  local divider = dividerColor()
+  for gx = 0, cols do
+    if isDivider(gx, cols) then
+      for y = 0, rows * cell do
+        out:drawPixel(gx * cell, y, divider)
+      end
+      if gx > 0 and gx < cols then
+        for y = 0, rows * cell do
+          out:drawPixel(gx * cell + 1, y, divider)
+        end
+      end
+    end
+  end
+  for gy = 0, rows do
+    if isDivider(gy, rows) then
+      for x = 0, cols * cell do
+        out:drawPixel(x, gy * cell, divider)
+      end
+      if gy > 0 and gy < rows then
+        for x = 0, cols * cell do
+          out:drawPixel(x, gy * cell + 1, divider)
+        end
       end
     end
   end
