@@ -19,7 +19,7 @@ dlg:file{ id = "output", label = "输出文件", save = true, filename = default
 dlg:combobox{ id = "brand", label = "色板", options = { "MARD/漫漫" }, option = "MARD/漫漫" }
 dlg:number{ id = "cell", label = "格子大小(px)", text = "32", decimals = 0 }
 dlg:slider{ id = "bead", label = "豆子直径(%)", min = 50, max = 100, value = 90 }
-dlg:check{ id = "stats", label = "包含用量统计", selected = true }
+dlg:check{ id = "stats", label = "包含用量统计", text = "", selected = true }
 dlg:button{ id = "ok", text = "导出", focus = true }
 dlg:button{ id = "cancel", text = "取消" }
 dlg:show()
@@ -45,17 +45,19 @@ for y = 0, sprite.height - 1 do
   end
 end
 
+local showStats = data.stats ~= false
+
 local okSave, err = pcall(function()
   local out = Render.render(flat, matches, {
     cell = math.max(8, math.floor(tonumber(data.cell) or 32)),
     beadRatio = data.bead / 100,
-    showStats = data.stats,
+    showStats = showStats,
   })
   out:saveAs(data.output)
 end)
 
 if okSave then
-  app.alert("导出完成：" .. data.output)
+  app.alert("导出完成：" .. data.output .. "（统计：" .. (showStats and "开" or "关") .. "）")
 else
   app.alert("导出失败：" .. tostring(err))
 end
