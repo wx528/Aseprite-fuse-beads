@@ -21,3 +21,12 @@ ok(not exact2, "exact flag false on fuzzy match")
 
 local e3 = Color.nearest(pal, 20, 20, 240)
 eq(e3.code, "X2", "near blue maps to blue")
+
+
+local browns = {
+  { code = "G19", name = "b1", rgb = { r = 189, g = 111, b = 54 } },
+  { code = "G7", name = "b2", rgb = { r = 138, g = 94, b = 64 } },
+  { code = "F10", name = "b3", rgb = { r = 106, g = 62, b = 37 } },
+}
+eq(Color.nearest(browns, 0xC3, 0x70, 0x20).code, "G19", "light orange-brown to G19")
+eq(Color.nearest(browns, 0x98, 0x4E, 0x16).code, "G7", "dark brown to G7")
