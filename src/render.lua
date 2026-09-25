@@ -93,18 +93,18 @@ function Render.render(srcImg, matches, opts)
   local margin = opts.showCoords and cell or 0
   local W = margin * 2 + cols * cell + 1
 
-  local chip = math.floor(cell / 2)
-  local rowH = chip + 2
+  local chip = cell
+  local rowH = chip + 4
   local statsScale = math.max(1, math.floor(cell / 16))
   local entryW = 1
   local perRow = 1
   if opts.showStats then
-    local maxTextW = 0
+    local maxCntW = 0
     for _, u in ipairs(usage) do
-      local tw = Font.measure(u.entry.code .. " " .. u.count, statsScale)
-      if tw > maxTextW then maxTextW = tw end
+      local tw = Font.measure(tostring(u.count), statsScale)
+      if tw > maxCntW then maxCntW = tw end
     end
-    entryW = chip + 2 + maxTextW + 4
+    entryW = 2 + chip + 3 + maxCntW + 2
     perRow = math.max(1, math.floor((W - margin * 2) / entryW))
   end
   local statsRows = opts.showStats and math.ceil(#usage / perRow) or 0
@@ -206,14 +206,15 @@ function Render.render(srcImg, matches, opts)
 
   if opts.showStats then
     local top = oy + rows * cell + 1 + margin
-    local cr = math.max(2, math.floor(rowH * 0.3))
+    local cr = math.max(2, math.floor(rowH * 0.25))
+    local bw, bh = entryW - 2, rowH - 2
+    local chipCr = math.floor(chip * 0.2)
     for i, u in ipairs(usage) do
       local col = (i - 1) % perRow
       local row = math.floor((i - 1) / perRow)
       local x0 = margin + col * entryW
       local y0 = top + row * rowH
       local swColor = app.pixelColor.rgba(u.entry.rgb.r, u.entry.rgb.g, u.entry.rgb.b, 255)
-      local bw, bh = entryW - 2, rowH
       for bx = cr, bw - 1 - cr do
         out:drawPixel(x0 + bx, y0, swColor)
         out:drawPixel(x0 + bx, y0 + bh - 1, swColor)
@@ -233,15 +234,23 @@ function Render.render(srcImg, matches, opts)
           end
         end
       end
-      local cy0 = y0 + math.floor((rowH - chip) / 2)
-      for sy = 0, chip - 1 do
-        for sx = 0, chip - 1 do
-          out:drawPixel(x0 + 1 + sx, cy0 + sy, swColor)
+      local chipX = x0 + 2
+      local chipY = y0 + math.floor((bh - chip) / 2)
+      for py = 0, chip - 1 do
+        for px = 0, chip - 1 do
+          local dx = math.max(0, chipCr - px, px - (chip - 1 - chipCr))
+          local dy = math.max(0, chipCr - py, py - (chip - 1 - chipCr))
+          if dx * dx + dy * dy <= chipCr * chipCr then
+            out:drawPixel(chipX + px, chipY + py, swColor)
+          end
         end
       end
-      local label = u.entry.code .. " " .. u.count
-      local tw, th = Font.measure(label, statsScale)
-      Font.draw(out, x0 + 1 + chip + 2, y0 + math.floor((rowH - th) / 2), label, statsScale, black())
+      local s = fitScale(u.entry.code, chip, 0.875, 0.5)
+      local tw, th = Font.measure(u.entry.code, s)
+      Font.draw(out, chipX + math.floor((chip - tw) / 2), chipY + math.floor((chip - th) / 2), u.entry.code, s, textColorFor(u.entry.rgb))
+      local cnt = tostring(u.count)
+      local cw, ch = Font.measure(cnt, statsScale)
+      Font.draw(out, chipX + chip + 3, y0 + math.floor((bh - ch) / 2), cnt, statsScale, black())
     end
   end
 

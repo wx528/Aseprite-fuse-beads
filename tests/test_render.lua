@@ -34,8 +34,8 @@ eq(app.pixelColor.rgbaR(emptyCell), 255, "transparent cell stays white")
 eq(app.pixelColor.rgbaG(emptyCell), 255, "transparent cell green white")
 
 local out2 = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(out2.height, 33 + 2 * 10, "stats compact rows")
-local swatch = out2:getPixel(2, 36)
+eq(out2.height, 33 + 2 * 20, "stats compact rows")
+local swatch = out2:getPixel(4, 38)
 eq(app.pixelColor.rgbaR(swatch), 255, "first stats swatch is red")
 
 local Font = dofile(here .. "/../src/font.lua")
@@ -52,7 +52,7 @@ local sparseUsage = Render.countUsage(sparse)
 eq(#sparseUsage, 2, "sparse matches: two colors counted")
 if #sparseUsage == 2 then eq(sparseUsage[1].count, 1, "sparse matches: count is 1") end
 local outSparse = Render.render(src, sparse, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(outSparse.height, 33 + 2 * 10, "sparse matches: stats rows add height")
+eq(outSparse.height, 33 + 2 * 20, "sparse matches: stats rows add height")
 
 local sqc = out:getPixel(1, 1)
 eq(app.pixelColor.rgbaG(sqc), 0, "square bead fills interior corner by default")
@@ -87,9 +87,13 @@ for i = 1, 7 do
 end
 local src7 = Image(7, 1, ColorMode.RGB)
 local out7 = Render.render(src7, m7, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(out7.height, 17 + 3 * 10, "stats wraps to next row")
-eq(app.pixelColor.rgbaR(out7:getPixel(60, 29)), 180, "6th entry wraps to second row")
-eq(app.pixelColor.rgbaR(out2:getPixel(23, 35)), 0, "count inline after code")
+eq(out7.height, 17 + 2 * 20, "stats wraps to next row")
+eq(app.pixelColor.rgbaR(out7:getPixel(29, 39)), 180, "6th entry wraps to second row")
+eq(app.pixelColor.rgbaR(out2:getPixel(21, 39)), 0, "count right of chip")
+do
+  local p = out2:getPixel(7, 39)
+  ok(app.pixelColor.rgbaR(p) == 255 and app.pixelColor.rgbaG(p) == 255, "code text inside chip")
+end
 
 local wc = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = false, showCoords = true })
 eq(wc.width, 33 + 32, "coords add horizontal margin")
@@ -101,8 +105,8 @@ eq(app.pixelColor.rgbaR(wc:getPixel(22, 54)), 0, "bottom label mirrored 2 drawn"
 eq(app.pixelColor.rgbaR(wc:getPixel(55, 21)), 0, "right label mirrored 2 drawn")
 eq(app.pixelColor.rgbaR(wc:getPixel(7, 21)), 0, "left label 1 drawn")
 
-eq(app.pixelColor.rgbaR(out2:getPixel(6, 33)), 255, "entry border top edge")
-eq(app.pixelColor.rgbaB(out2:getPixel(6, 33)), 0, "entry border is entry color")
-eq(app.pixelColor.rgbaR(out2:getPixel(0, 36)), 255, "entry border left edge")
+eq(app.pixelColor.rgbaR(out2:getPixel(10, 33)), 255, "entry border top edge")
+eq(app.pixelColor.rgbaB(out2:getPixel(10, 33)), 0, "entry border is entry color")
+eq(app.pixelColor.rgbaR(out2:getPixel(0, 41)), 255, "entry border left edge")
 local corner = out2:getPixel(0, 33)
 ok(app.pixelColor.rgbaR(corner) == 255 and app.pixelColor.rgbaG(corner) == 255, "entry border corner is rounded")
