@@ -128,19 +128,31 @@ function Render.render(srcImg, matches, opts)
     perRow = math.max(1, math.floor((W - margin * 2) / entryW))
   end
   local statsRows = opts.showStats and math.ceil(#usage / perRow) or 0
-  local H = margin * 2 + rows * cell + 1 + statsRows * rowH
+  local headerH = opts.showStats and cell or 0
+  local H = margin * 2 + headerH + rows * cell + 1 + statsRows * rowH
   local out = Image(W, H, ColorMode.RGB)
   for px in out:pixels() do
     px(white())
   end
 
-  local ox, oy = margin, margin
+  local ox, oy = margin, margin + headerH
+
+  if opts.showStats then
+    local total = 0
+    for _, u in ipairs(usage) do
+      total = total + u.count
+    end
+    local header = string.format("%dX%d | %d | %d | MARD", cols, rows, total, #usage)
+    local hs = fitScale(header, cell, (W - ox - 2) / cell, 0.5)
+    local hw, hh = Font.measure(header, hs)
+    Font.draw(out, ox + 1, math.floor((headerH - hh) / 2), header, hs, black())
+  end
 
   if opts.showCoords then
     local band = app.pixelColor.rgba(235, 235, 235, 255)
     for y = 0, margin - 1 do
       for x = 0, W - 1 do
-        out:drawPixel(x, y, band)
+        out:drawPixel(x, headerH + y, band)
         out:drawPixel(x, oy + rows * cell + 1 + y, band)
       end
     end
@@ -230,7 +242,7 @@ function Render.render(srcImg, matches, opts)
   if opts.showCoords then
     for i = 1, cols do
       local x0 = ox + (i - 1) * cell
-      drawCenteredText(out, tostring(i), x0, 0, cell, black())
+      drawCenteredText(out, tostring(i), x0, oy - margin, cell, black())
       drawCenteredText(out, tostring(cols - i + 1), x0, oy + rows * cell + 1, cell, black())
     end
     for i = 1, rows do

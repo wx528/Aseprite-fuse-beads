@@ -34,8 +34,8 @@ eq(app.pixelColor.rgbaR(emptyCell), 255, "transparent cell stays white")
 eq(app.pixelColor.rgbaG(emptyCell), 255, "transparent cell green white")
 
 local out2 = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(out2.height, 33 + 2 * 20, "stats compact rows")
-local swatch = out2:getPixel(4, 38)
+eq(out2.height, 16 + 33 + 2 * 20, "header plus stats rows")
+local swatch = out2:getPixel(4, 54)
 eq(app.pixelColor.rgbaR(swatch), 255, "first stats swatch is red")
 
 local Font = dofile(here .. "/../src/font.lua")
@@ -52,7 +52,7 @@ local sparseUsage = Render.countUsage(sparse)
 eq(#sparseUsage, 2, "sparse matches: two colors counted")
 if #sparseUsage == 2 then eq(sparseUsage[1].count, 1, "sparse matches: count is 1") end
 local outSparse = Render.render(src, sparse, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(outSparse.height, 33 + 2 * 20, "sparse matches: stats rows add height")
+eq(outSparse.height, 16 + 33 + 2 * 20, "sparse matches: header plus stats")
 
 local sqc = out:getPixel(1, 1)
 eq(app.pixelColor.rgbaG(sqc), 0, "square bead fills interior corner by default")
@@ -87,11 +87,11 @@ for i = 1, 7 do
 end
 local src7 = Image(7, 1, ColorMode.RGB)
 local out7 = Render.render(src7, m7, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(out7.height, 17 + 2 * 20, "stats wraps to next row")
-eq(app.pixelColor.rgbaR(out7:getPixel(31, 39)), 180, "6th entry wraps to second row")
-eq(app.pixelColor.rgbaR(out2:getPixel(21, 39)), 0, "count right of chip")
+eq(out7.height, 16 + 17 + 2 * 20, "stats wraps to next row")
+eq(app.pixelColor.rgbaR(out7:getPixel(31, 55)), 180, "6th entry wraps to second row")
+eq(app.pixelColor.rgbaR(out2:getPixel(21, 55)), 0, "count right of chip")
 do
-  local p = out2:getPixel(7, 39)
+  local p = out2:getPixel(7, 55)
   ok(app.pixelColor.rgbaR(p) == 255 and app.pixelColor.rgbaG(p) == 255, "code text inside chip")
 end
 
@@ -105,10 +105,9 @@ eq(app.pixelColor.rgbaR(wc:getPixel(22, 54)), 0, "bottom label mirrored 2 drawn"
 eq(app.pixelColor.rgbaR(wc:getPixel(55, 21)), 0, "right label mirrored 2 drawn")
 eq(app.pixelColor.rgbaR(wc:getPixel(7, 21)), 0, "left label 1 drawn")
 
-eq(app.pixelColor.rgbaR(out2:getPixel(10, 33)), 255, "entry border top edge")
-eq(app.pixelColor.rgbaG(out2:getPixel(10, 33)), 102, "border top is highlight")
-eq(app.pixelColor.rgbaR(out2:getPixel(0, 41)), 255, "entry border left edge")
-local corner = out2:getPixel(0, 33)
+eq(app.pixelColor.rgbaG(out2:getPixel(10, 49)), 102, "entry border top edge")
+eq(app.pixelColor.rgbaR(out2:getPixel(0, 57)), 255, "entry border left edge")
+local corner = out2:getPixel(0, 49)
 ok(app.pixelColor.rgbaR(corner) == 255 and app.pixelColor.rgbaG(corner) == 255, "entry border corner is rounded")
 
 pal7[7].code = "A10"
@@ -127,13 +126,13 @@ local function textRowSpan(img, x0, y0, w, h)
   if not minY then return 0 end
   return maxY - minY + 1
 end
-eq(textRowSpan(out7b, 2, 18, 16, 16), textRowSpan(out7b, 58, 38, 16, 16), "2-char and 3-char codes same scale")
-eq(textRowSpan(out7b, 2, 18, 16, 16), 5, "code text height at cell 16")
+eq(textRowSpan(out7b, 2, 34, 16, 16), textRowSpan(out7b, 58, 54, 16, 16), "2-char and 3-char codes same scale")
+eq(textRowSpan(out7b, 2, 34, 16, 16), 5, "code text height at cell 16")
 
-eq(app.pixelColor.rgbaG(out2:getPixel(8, 34)), 102, "chip top edge highlight")
-eq(app.pixelColor.rgbaR(out2:getPixel(8, 49)), 153, "chip bottom edge shadow")
-eq(app.pixelColor.rgbaR(out2:getPixel(10, 50)), 153, "border bottom edge shadow")
-eq(app.pixelColor.rgbaR(out2:getPixel(6, 36)), 255, "chip interior keeps base color")
+eq(app.pixelColor.rgbaG(out2:getPixel(8, 50)), 102, "chip top edge highlight")
+eq(app.pixelColor.rgbaR(out2:getPixel(8, 65)), 153, "chip bottom edge shadow")
+eq(app.pixelColor.rgbaR(out2:getPixel(10, 66)), 153, "border bottom edge shadow")
+eq(app.pixelColor.rgbaR(out2:getPixel(6, 52)), 255, "chip interior keeps base color")
 
 eq(app.pixelColor.rgbaR(wc:getPixel(5, 5)), 235, "top coord band gray")
 eq(app.pixelColor.rgbaR(wc:getPixel(0, 0)), 235, "coord band corner gray")
@@ -142,3 +141,9 @@ eq(app.pixelColor.rgbaR(wc:getPixel(60, 20)), 235, "right coord band gray")
 eq(app.pixelColor.rgbaR(wc:getPixel(5, 60)), 235, "bottom coord band gray")
 local boardPx = wc:getPixel(24, 24)
 eq(app.pixelColor.rgbaR(boardPx), 255, "board not affected by coord band")
+
+eq(app.pixelColor.rgbaR(out2:getPixel(3, 5)), 0, "header text drawn at top")
+
+local both = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true, showCoords = true })
+eq(app.pixelColor.rgbaR(both:getPixel(23, 21)), 0, "top coord label below header")
+eq(app.pixelColor.rgbaR(both:getPixel(18, 5)), 0, "header text above coord band")

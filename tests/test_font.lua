@@ -20,3 +20,5 @@ eq(app.pixelColor.rgbaR(img2:getPixel(0, 0)), 0, "A top left unset")
 for ch in ("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"):gmatch(".") do
   ok(Font.GLYPHS[ch] ~= nil, "glyph exists for " .. ch)
 end
+
+ok(Font.GLYPHS["|"] ~= nil, "pipe glyph exists")
