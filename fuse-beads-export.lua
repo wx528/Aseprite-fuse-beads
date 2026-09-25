@@ -9,6 +9,19 @@ if not sprite then
   return
 end
 
+if sprite.width > 128 or sprite.height > 128 then
+  local warn = Dialog("尺寸警告")
+  warn:label{ text = "当前图像 " .. sprite.width .. "x" .. sprite.height .. "，尺寸过大" }
+  warn:label{ text = "导出可能导致软件卡死；拼豆图纸一般不会用这么大尺寸" }
+  warn:label{ text = "建议先用 精灵 > 精灵大小 缩小（如 64x64）再导出" }
+  warn:button{ id = "ok", text = "执意导出" }
+  warn:button{ id = "cancel", text = "取消" }
+  warn:show()
+  if not warn.data.ok then
+    return
+  end
+end
+
 local defaultName = "pattern.png"
 if sprite.filename and sprite.filename ~= "" then
   defaultName = app.fs.joinPath(app.fs.filePath(sprite.filename), app.fs.fileTitle(sprite.filename) .. "_pattern.png")

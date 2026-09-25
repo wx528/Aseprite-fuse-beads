@@ -21,7 +21,7 @@ _G.Dialog = function(title)
     end
     return w
   end
-  for _, m in ipairs({ "file", "number", "slider", "check", "combobox", "button" }) do
+  for _, m in ipairs({ "file", "number", "slider", "check", "combobox", "button", "label" }) do
     w[m] = function(self, opts)
       if m == "button" then
         if opts and opts.id == "ok" then
