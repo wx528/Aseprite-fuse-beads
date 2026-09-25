@@ -47,7 +47,7 @@ function Font.measure(text, scale)
   return (#text * 4 - 1) * scale, 5 * scale
 end
 
-function Font.draw(img, x, y, text, scale, color)
+function Font.draw(img, x, y, text, scale, color, bold)
   local cx = x
   for i = 1, #text do
     local g = Font.GLYPHS[text:sub(i, i)]
@@ -59,6 +59,9 @@ function Font.draw(img, x, y, text, scale, color)
             for sy = 0, scale - 1 do
               for sx = 0, scale - 1 do
                 img:drawPixel(cx + (col - 1) * scale + sx, y + (row - 1) * scale + sy, color)
+                if bold then
+                  img:drawPixel(cx + (col - 1) * scale + sx + 1, y + (row - 1) * scale + sy, color)
+                end
               end
             end
           end

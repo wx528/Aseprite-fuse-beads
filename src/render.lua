@@ -52,8 +52,8 @@ local function darkenColor(rgb)
 end
 
 local function fitScale(text, cell, wf, hf)
-  local maxW = math.floor(cell * (wf or 0.8))
-  local maxH = math.floor(cell * (hf or 0.4))
+  local maxW = math.floor(cell * (wf or 0.9))
+  local maxH = math.floor(cell * (hf or 0.55))
   local s = math.max(1, math.floor(cell / 8))
   while s > 1 do
     local w, h = Font.measure(text, s)
@@ -70,7 +70,7 @@ local function drawCenteredText(img, text, cellX, cellY, cell, color)
   local w, h = Font.measure(text, s)
   local x = cellX + math.floor((cell - w) / 2)
   local y = cellY + math.floor((cell - h) / 2)
-  Font.draw(img, x, y, text, s, color)
+  Font.draw(img, x, y, text, s, color, s >= 2)
 end
 
 function Render.countUsage(matches)
