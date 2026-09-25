@@ -3,7 +3,7 @@ local Color = dofile(here .. "/color.lua")
 local Render = dofile(here .. "/render.lua")
 
 local BRANDS = {
-  { label = "MARD/漫漫", file = "palette_mard", ascii = "MARD" },
+  { label = "MARD", file = "palette_mard", ascii = "MARD" },
   { label = "Perler", file = "palette_perler", ascii = "PERLER" },
   { label = "Hama", file = "palette_hama", ascii = "HAMA" },
   { label = "Artkal", file = "palette_artkal", ascii = "ARTKAL" },
@@ -12,17 +12,17 @@ local BRANDS = {
 return function()
   local sprite = app.sprite
   if not sprite then
-    app.alert("没有打开的 sprite，请先打开一张图")
+    app.alert("No sprite open. Open a sprite first.")
     return
   end
 
   if sprite.width > 128 or sprite.height > 128 then
-    local warn = Dialog("尺寸警告")
-    warn:label{ text = "当前图像 " .. sprite.width .. "x" .. sprite.height .. "，尺寸过大" }
-    warn:label{ text = "导出可能导致软件卡死；拼豆图纸一般不会用这么大尺寸" }
-    warn:label{ text = "建议先用 精灵 > 精灵大小 缩小（如 64x64）再导出" }
-    warn:button{ id = "ok", text = "执意导出" }
-    warn:button{ id = "cancel", text = "取消" }
+    local warn = Dialog("Size Warning")
+    warn:label{ text = "Image is " .. sprite.width .. "x" .. sprite.height .. " - quite large." }
+    warn:label{ text = "Exporting may freeze Aseprite; bead patterns are rarely this big." }
+    warn:label{ text = "Consider Sprite > Sprite Size first (e.g. 64x64)." }
+    warn:button{ id = "ok", text = "Export Anyway" }
+    warn:button{ id = "cancel", text = "Cancel" }
     warn:show()
     if not warn.data.ok then
       return
@@ -39,18 +39,18 @@ return function()
     brandLabels[i] = b.label
   end
 
-  local dlg = Dialog("导出拼豆图纸")
-  dlg:file{ id = "output", label = "输出文件", save = true, filename = defaultName, filetypes = { "png" } }
-  dlg:combobox{ id = "brand", label = "色板", options = brandLabels, option = brandLabels[1] }
-  dlg:combobox{ id = "shape", label = "豆子形状", options = { "方形", "圆形" }, option = "方形" }
-  dlg:number{ id = "cell", label = "格子大小(px)", text = "32", decimals = 0 }
-  dlg:slider{ id = "bead", label = "豆子直径(%)", min = 50, max = 100, value = 90 }
-  dlg:number{ id = "gridEvery", label = "分格线间隔(格)", text = "5", decimals = 0 }
-  dlg:slider{ id = "textSize", label = "色号字号(%)", min = 50, max = 150, value = 100 }
-  dlg:check{ id = "coords", label = "四边序号", text = "", selected = true }
-  dlg:check{ id = "stats", label = "包含用量统计", text = "", selected = true }
-  dlg:button{ id = "ok", text = "导出", focus = true }
-  dlg:button{ id = "cancel", text = "取消" }
+  local dlg = Dialog("Export Fuse Beads Pattern")
+  dlg:file{ id = "output", label = "Output File", save = true, filename = defaultName, filetypes = { "png" } }
+  dlg:combobox{ id = "brand", label = "Palette", options = brandLabels, option = brandLabels[1] }
+  dlg:combobox{ id = "shape", label = "Bead Shape", options = { "Square", "Circle" }, option = "Square" }
+  dlg:number{ id = "cell", label = "Cell Size (px)", text = "32", decimals = 0 }
+  dlg:slider{ id = "bead", label = "Bead Diameter (%)", min = 50, max = 100, value = 90 }
+  dlg:number{ id = "gridEvery", label = "Divider Every (cells)", text = "5", decimals = 0 }
+  dlg:slider{ id = "textSize", label = "Code Font Size (%)", min = 50, max = 150, value = 100 }
+  dlg:check{ id = "coords", label = "Edge Coordinates", text = "", selected = true }
+  dlg:check{ id = "stats", label = "Usage Stats", text = "", selected = true }
+  dlg:button{ id = "ok", text = "Export", focus = true }
+  dlg:button{ id = "cancel", text = "Cancel" }
   dlg:show()
 
   local data = dlg.data
@@ -88,7 +88,7 @@ return function()
     local out = Render.render(flat, matches, {
       cell = math.max(8, math.floor(tonumber(data.cell) or 32)),
       beadRatio = (tonumber(data.bead) or 90) / 100,
-      beadShape = data.shape == "圆形" and "circle" or "square",
+      beadShape = data.shape == "Circle" and "circle" or "square",
       gridEvery = tonumber(data.gridEvery) or 5,
       textScale = tonumber(data.textSize) or 100,
       brand = brand.ascii,
@@ -99,8 +99,8 @@ return function()
   end)
 
   if okSave then
-    app.alert("导出完成：" .. data.output .. "（统计：" .. (showStats and "开" or "关") .. "）")
+    app.alert("Exported: " .. data.output .. " (stats: " .. (showStats and "on" or "off") .. ")")
   else
-    app.alert("导出失败：" .. tostring(err))
+    app.alert("Export failed: " .. tostring(err))
   end
 end
