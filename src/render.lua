@@ -136,6 +136,22 @@ function Render.render(srcImg, matches, opts)
 
   local ox, oy = margin, margin
 
+  if opts.showCoords then
+    local band = app.pixelColor.rgba(235, 235, 235, 255)
+    for y = 0, margin - 1 do
+      for x = 0, W - 1 do
+        out:drawPixel(x, y, band)
+        out:drawPixel(x, oy + rows * cell + 1 + y, band)
+      end
+    end
+    for y = margin, margin + rows * cell do
+      for x = 0, margin - 1 do
+        out:drawPixel(x, y, band)
+        out:drawPixel(W - 1 - x, y, band)
+      end
+    end
+  end
+
   local gridEvery = opts.gridEvery
   if gridEvery == nil then gridEvery = 5 end
   local function isDivider(i, n)
