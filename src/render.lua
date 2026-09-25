@@ -37,6 +37,20 @@ local function textColorFor(rgb)
   return white()
 end
 
+local function lightenColor(rgb)
+  return app.pixelColor.rgba(
+    rgb.r + math.floor((255 - rgb.r) * 0.4),
+    rgb.g + math.floor((255 - rgb.g) * 0.4),
+    rgb.b + math.floor((255 - rgb.b) * 0.4), 255)
+end
+
+local function darkenColor(rgb)
+  return app.pixelColor.rgba(
+    math.floor(rgb.r * 0.6),
+    math.floor(rgb.g * 0.6),
+    math.floor(rgb.b * 0.6), 255)
+end
+
 local function fitScale(text, cell, wf, hf)
   local maxW = math.floor(cell * (wf or 0.8))
   local maxH = math.floor(cell * (hf or 0.4))
@@ -221,33 +235,48 @@ function Render.render(srcImg, matches, opts)
       local x0 = margin + col * entryW
       local y0 = top + row * rowH
       local swColor = app.pixelColor.rgba(u.entry.rgb.r, u.entry.rgb.g, u.entry.rgb.b, 255)
+      local hiColor = lightenColor(u.entry.rgb)
+      local shColor = darkenColor(u.entry.rgb)
       for bx = cr, bw - 1 - cr do
-        out:drawPixel(x0 + bx, y0, swColor)
-        out:drawPixel(x0 + bx, y0 + bh - 1, swColor)
+        out:drawPixel(x0 + bx, y0, hiColor)
+        out:drawPixel(x0 + bx, y0 + bh - 1, shColor)
       end
       for by = cr, bh - 1 - cr do
-        out:drawPixel(x0, y0 + by, swColor)
-        out:drawPixel(x0 + bw - 1, y0 + by, swColor)
+        out:drawPixel(x0, y0 + by, hiColor)
+        out:drawPixel(x0 + bw - 1, y0 + by, shColor)
       end
       for dy = 0, cr do
         for dx = 0, cr do
           local d = math.sqrt(dx * dx + dy * dy)
           if math.abs(d - cr) < 0.8 then
-            out:drawPixel(x0 + cr - dx, y0 + cr - dy, swColor)
-            out:drawPixel(x0 + bw - 1 - cr + dx, y0 + cr - dy, swColor)
-            out:drawPixel(x0 + cr - dx, y0 + bh - 1 - cr + dy, swColor)
-            out:drawPixel(x0 + bw - 1 - cr + dx, y0 + bh - 1 - cr + dy, swColor)
+            out:drawPixel(x0 + cr - dx, y0 + cr - dy, hiColor)
+            out:drawPixel(x0 + bw - 1 - cr + dx, y0 + cr - dy, hiColor)
+            out:drawPixel(x0 + cr - dx, y0 + bh - 1 - cr + dy, shColor)
+            out:drawPixel(x0 + bw - 1 - cr + dx, y0 + bh - 1 - cr + dy, shColor)
           end
         end
       end
       local chipX = x0 + 2
       local chipY = y0 + math.floor((bh - chip) / 2)
+      local bevel = math.max(1, math.floor(chip / 12))
       for py = 0, chip - 1 do
         for px = 0, chip - 1 do
           local dx = math.max(0, chipCr - px, px - (chip - 1 - chipCr))
           local dy = math.max(0, chipCr - py, py - (chip - 1 - chipCr))
           if dx * dx + dy * dy <= chipCr * chipCr then
-            out:drawPixel(chipX + px, chipY + py, swColor)
+            local c = swColor
+            local straightX = px >= chipCr and px <= chip - 1 - chipCr
+            local straightY = py >= chipCr and py <= chip - 1 - chipCr
+            if py < bevel and straightX then
+              c = hiColor
+            elseif py >= chip - bevel and straightX then
+              c = shColor
+            elseif px < bevel and straightY then
+              c = hiColor
+            elseif px >= chip - bevel and straightY then
+              c = shColor
+            end
+            out:drawPixel(chipX + px, chipY + py, c)
           end
         end
       end

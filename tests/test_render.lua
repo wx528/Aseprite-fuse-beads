@@ -106,7 +106,7 @@ eq(app.pixelColor.rgbaR(wc:getPixel(55, 21)), 0, "right label mirrored 2 drawn")
 eq(app.pixelColor.rgbaR(wc:getPixel(7, 21)), 0, "left label 1 drawn")
 
 eq(app.pixelColor.rgbaR(out2:getPixel(10, 33)), 255, "entry border top edge")
-eq(app.pixelColor.rgbaB(out2:getPixel(10, 33)), 0, "entry border is entry color")
+eq(app.pixelColor.rgbaG(out2:getPixel(10, 33)), 102, "border top is highlight")
 eq(app.pixelColor.rgbaR(out2:getPixel(0, 41)), 255, "entry border left edge")
 local corner = out2:getPixel(0, 33)
 ok(app.pixelColor.rgbaR(corner) == 255 and app.pixelColor.rgbaG(corner) == 255, "entry border corner is rounded")
@@ -129,3 +129,8 @@ local function textRowSpan(img, x0, y0, w, h)
 end
 eq(textRowSpan(out7b, 2, 18, 16, 16), textRowSpan(out7b, 58, 38, 16, 16), "2-char and 3-char codes same scale")
 eq(textRowSpan(out7b, 2, 18, 16, 16), 5, "code text height at cell 16")
+
+eq(app.pixelColor.rgbaG(out2:getPixel(8, 34)), 102, "chip top edge highlight")
+eq(app.pixelColor.rgbaR(out2:getPixel(8, 49)), 153, "chip bottom edge shadow")
+eq(app.pixelColor.rgbaR(out2:getPixel(10, 50)), 153, "border bottom edge shadow")
+eq(app.pixelColor.rgbaR(out2:getPixel(6, 36)), 255, "chip interior keeps base color")
