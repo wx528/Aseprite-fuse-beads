@@ -2,6 +2,8 @@
 
 [English](README_EN.md)
 
+![小鳄鱼](assets/sprite001.gif)
+
 把 Aseprite 里打开的像素画一键导出为拼豆（fuse beads）图纸 PNG：每颗豆子标注 MARD/漫漫色号，四边带坐标序号，顶部信息条 + 底部用量统计。
 
 ![示例](fixtures/gradient_pattern.png)

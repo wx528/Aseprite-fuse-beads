@@ -2,6 +2,8 @@
 
 [中文](README.md)
 
+![Crocodile](assets/sprite001.gif)
+
 Export the sprite open in Aseprite as a fuse beads (Perler/MARD) pattern PNG with one click: every bead labeled with its MARD color code, coordinate numbers on all four edges, a summary header and bead usage statistics.
 
 ![Example](fixtures/gradient_pattern.png)
