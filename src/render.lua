@@ -206,21 +206,42 @@ function Render.render(srcImg, matches, opts)
 
   if opts.showStats then
     local top = oy + rows * cell + 1 + margin
+    local cr = math.max(2, math.floor(rowH * 0.3))
     for i, u in ipairs(usage) do
       local col = (i - 1) % perRow
       local row = math.floor((i - 1) / perRow)
       local x0 = margin + col * entryW
       local y0 = top + row * rowH
       local swColor = app.pixelColor.rgba(u.entry.rgb.r, u.entry.rgb.g, u.entry.rgb.b, 255)
+      local bw, bh = entryW - 2, rowH
+      for bx = cr, bw - 1 - cr do
+        out:drawPixel(x0 + bx, y0, swColor)
+        out:drawPixel(x0 + bx, y0 + bh - 1, swColor)
+      end
+      for by = cr, bh - 1 - cr do
+        out:drawPixel(x0, y0 + by, swColor)
+        out:drawPixel(x0 + bw - 1, y0 + by, swColor)
+      end
+      for dy = 0, cr do
+        for dx = 0, cr do
+          local d = math.sqrt(dx * dx + dy * dy)
+          if math.abs(d - cr) < 0.8 then
+            out:drawPixel(x0 + cr - dx, y0 + cr - dy, swColor)
+            out:drawPixel(x0 + bw - 1 - cr + dx, y0 + cr - dy, swColor)
+            out:drawPixel(x0 + cr - dx, y0 + bh - 1 - cr + dy, swColor)
+            out:drawPixel(x0 + bw - 1 - cr + dx, y0 + bh - 1 - cr + dy, swColor)
+          end
+        end
+      end
       local cy0 = y0 + math.floor((rowH - chip) / 2)
       for sy = 0, chip - 1 do
         for sx = 0, chip - 1 do
-          out:drawPixel(x0 + sx, cy0 + sy, swColor)
+          out:drawPixel(x0 + 1 + sx, cy0 + sy, swColor)
         end
       end
       local label = u.entry.code .. " " .. u.count
       local tw, th = Font.measure(label, statsScale)
-      Font.draw(out, x0 + chip + 2, y0 + math.floor((rowH - th) / 2), label, statsScale, black())
+      Font.draw(out, x0 + 1 + chip + 2, y0 + math.floor((rowH - th) / 2), label, statsScale, black())
     end
   end
 
