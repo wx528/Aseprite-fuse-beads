@@ -74,3 +74,21 @@ eq(app.pixelColor.rgbaR(div:getPixel(160, 8)), 120, "right border is dark divide
 local nodiv = Render.render(src10, m10, { cell = 16, beadRatio = 0.9, showStats = false, gridEvery = 0 })
 eq(app.pixelColor.rgbaR(nodiv:getPixel(80, 8)), 200, "gridEvery 0 disables interior divider")
 eq(app.pixelColor.rgbaR(nodiv:getPixel(0, 8)), 120, "borders stay dark when dividers disabled")
+
+local m2 = { { pal[2], pal[2] }, { pal[2], pal[1] } }
+local u2 = Render.countUsage(m2)
+eq(u2[1].entry.code, "A1", "stats sorted by code, not count")
+eq(u2[2].entry.code, "B2", "code order second")
+
+local pal7 = {}
+local m7 = { {} }
+for i = 1, 7 do
+  pal7[i] = { code = "A" .. i, name = "c" .. i, rgb = { r = i * 30, g = 0, b = 0 } }
+  m7[1][i] = pal7[i]
+end
+local src7 = Image(7, 1, ColorMode.RGB)
+local out7 = Render.render(src7, m7, { cell = 16, beadRatio = 0.9, showStats = true })
+eq(out7.height, 17 + 5 * 16, "stats column capped at 5 rows")
+local labelW7 = select(1, Font.measure("A6 X 1", 1))
+local colW = 16 + 2 + labelW7
+eq(app.pixelColor.rgbaR(out7:getPixel(colW + 4, 17 + 3)), 180, "6th entry starts second column")

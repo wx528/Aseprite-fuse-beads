@@ -72,7 +72,16 @@ function Render.countUsage(matches)
       end
     end
   end
-  table.sort(order, function(a, b) return a.count > b.count end)
+  table.sort(order, function(a, b)
+    local la, na = a.entry.code:match("^(%a+)(%d+)$")
+    local lb, nb = b.entry.code:match("^(%a+)(%d+)$")
+    la, lb = la or a.entry.code, lb or b.entry.code
+    na, nb = tonumber(na) or 0, tonumber(nb) or 0
+    if la ~= lb then
+      return la < lb
+    end
+    return na < nb
+  end)
   return order
 end
 
@@ -81,7 +90,9 @@ function Render.render(srcImg, matches, opts)
   local cell = opts.cell or 32
   local beadRatio = opts.beadRatio or 0.9
   local usage = Render.countUsage(matches)
-  local statsRows = opts.showStats and #usage or 0
+  local PER_COL = 5
+  local statCols = opts.showStats and math.ceil(#usage / PER_COL) or 0
+  local statsRows = opts.showStats and math.min(#usage, PER_COL) or 0
 
   local maxLabelW = 0
   if opts.showStats then
@@ -93,8 +104,8 @@ function Render.render(srcImg, matches, opts)
   end
 
   local W = cols * cell + 1
-  if opts.showStats and #usage > 0 then
-    W = math.max(W, cell + 2 + maxLabelW)
+  if statCols > 0 then
+    W = math.max(W, statCols * (cell + 2 + maxLabelW))
   end
   local H = rows * cell + 1 + statsRows * cell
   local out = Image(W, H, ColorMode.RGB)
@@ -179,18 +190,22 @@ function Render.render(srcImg, matches, opts)
 
   if opts.showStats then
     local top = rows * cell + 1
+    local colWidth = cell + 2 + maxLabelW
     for i, u in ipairs(usage) do
-      local rowTop = top + (i - 1) * cell
+      local col = math.floor((i - 1) / PER_COL)
+      local row = (i - 1) % PER_COL
+      local x0 = col * colWidth
+      local rowTop = top + row * cell
       local swColor = app.pixelColor.rgba(u.entry.rgb.r, u.entry.rgb.g, u.entry.rgb.b, 255)
       for sy = 2, cell - 3 do
         for sx = 2, cell - 3 do
-          out:drawPixel(sx, rowTop + sy, swColor)
+          out:drawPixel(x0 + sx, rowTop + sy, swColor)
         end
       end
       local label = u.entry.code .. " X " .. u.count
       local s = fitScale(label, cell)
       local tw, th = Font.measure(label, s)
-      Font.draw(out, cell + 2, rowTop + math.floor((cell - th) / 2), label, s, black())
+      Font.draw(out, x0 + cell + 2, rowTop + math.floor((cell - th) / 2), label, s, black())
     end
   end
 
