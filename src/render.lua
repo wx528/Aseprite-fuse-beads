@@ -103,15 +103,19 @@ function Render.render(srcImg, matches, opts)
     end
   end
 
-  local W = cols * cell + 1
+  local margin = opts.showCoords and cell or 0
+
+  local W = margin * 2 + cols * cell + 1
   if statCols > 0 then
-    W = math.max(W, statCols * (cell + 2 + maxLabelW))
+    W = math.max(W, margin + statCols * (cell + 2 + maxLabelW))
   end
-  local H = rows * cell + 1 + statsRows * cell
+  local H = margin * 2 + rows * cell + 1 + statsRows * cell
   local out = Image(W, H, ColorMode.RGB)
   for px in out:pixels() do
     px(white())
   end
+
+  local ox, oy = margin, margin
 
   local gridEvery = opts.gridEvery
   if gridEvery == nil then gridEvery = 5 end
@@ -122,12 +126,12 @@ function Render.render(srcImg, matches, opts)
   local grid = gridColor()
   for gx = 0, cols do
     for y = 0, rows * cell do
-      out:drawPixel(gx * cell, y, grid)
+      out:drawPixel(ox + gx * cell, oy + y, grid)
     end
   end
   for gy = 0, rows do
     for x = 0, cols * cell do
-      out:drawPixel(x, gy * cell, grid)
+      out:drawPixel(ox + x, oy + gy * cell, grid)
     end
   end
 
@@ -137,8 +141,8 @@ function Render.render(srcImg, matches, opts)
     for cx = 1, cols do
       local e = matches[cy][cx]
       if e then
-        local centerX = (cx - 1) * cell + math.floor(cell / 2)
-        local centerY = (cy - 1) * cell + math.floor(cell / 2)
+        local centerX = ox + (cx - 1) * cell + math.floor(cell / 2)
+        local centerY = oy + (cy - 1) * cell + math.floor(cell / 2)
         local beadColor = app.pixelColor.rgba(e.rgb.r, e.rgb.g, e.rgb.b, 255)
         if opts.beadShape == "circle" then
           for dy = -r, r do
@@ -149,15 +153,15 @@ function Render.render(srcImg, matches, opts)
             end
           end
         else
-          local x0 = (cx - 1) * cell + 1
-          local y0 = (cy - 1) * cell + 1
+          local x0 = ox + (cx - 1) * cell + 1
+          local y0 = oy + (cy - 1) * cell + 1
           for py = y0, y0 + cell - 2 do
             for px = x0, x0 + cell - 2 do
               out:drawPixel(px, py, beadColor)
             end
           end
         end
-        drawCenteredText(out, e.code, (cx - 1) * cell, (cy - 1) * cell, cell, textColorFor(e.rgb))
+        drawCenteredText(out, e.code, ox + (cx - 1) * cell, oy + (cy - 1) * cell, cell, textColorFor(e.rgb))
       end
     end
   end
@@ -166,11 +170,11 @@ function Render.render(srcImg, matches, opts)
   for gx = 0, cols do
     if isDivider(gx, cols) then
       for y = 0, rows * cell do
-        out:drawPixel(gx * cell, y, divider)
+        out:drawPixel(ox + gx * cell, oy + y, divider)
       end
       if gx > 0 and gx < cols then
         for y = 0, rows * cell do
-          out:drawPixel(gx * cell + 1, y, divider)
+          out:drawPixel(ox + gx * cell + 1, oy + y, divider)
         end
       end
     end
@@ -178,23 +182,36 @@ function Render.render(srcImg, matches, opts)
   for gy = 0, rows do
     if isDivider(gy, rows) then
       for x = 0, cols * cell do
-        out:drawPixel(x, gy * cell, divider)
+        out:drawPixel(ox + x, oy + gy * cell, divider)
       end
       if gy > 0 and gy < rows then
         for x = 0, cols * cell do
-          out:drawPixel(x, gy * cell + 1, divider)
+          out:drawPixel(ox + x, oy + gy * cell + 1, divider)
         end
       end
     end
   end
 
+  if opts.showCoords then
+    for i = 1, cols do
+      local x0 = ox + (i - 1) * cell
+      drawCenteredText(out, tostring(i), x0, 0, cell, black())
+      drawCenteredText(out, tostring(cols - i + 1), x0, oy + rows * cell + 1, cell, black())
+    end
+    for i = 1, rows do
+      local y0 = oy + (i - 1) * cell
+      drawCenteredText(out, tostring(i), 0, y0, cell, black())
+      drawCenteredText(out, tostring(rows - i + 1), ox + cols * cell + 1, y0, cell, black())
+    end
+  end
+
   if opts.showStats then
-    local top = rows * cell + 1
+    local top = oy + rows * cell + 1 + margin
     local colWidth = cell + 2 + maxLabelW
     for i, u in ipairs(usage) do
       local col = math.floor((i - 1) / PER_COL)
       local row = (i - 1) % PER_COL
-      local x0 = col * colWidth
+      local x0 = margin + col * colWidth
       local rowTop = top + row * cell
       local swColor = app.pixelColor.rgba(u.entry.rgb.r, u.entry.rgb.g, u.entry.rgb.b, 255)
       for sy = 2, cell - 3 do

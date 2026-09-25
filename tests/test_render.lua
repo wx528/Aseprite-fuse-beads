@@ -92,3 +92,13 @@ eq(out7.height, 17 + 5 * 16, "stats column capped at 5 rows")
 local labelW7 = select(1, Font.measure("A6 X 1", 1))
 local colW = 16 + 2 + labelW7
 eq(app.pixelColor.rgbaR(out7:getPixel(colW + 4, 17 + 3)), 180, "6th entry starts second column")
+
+local wc = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = false, showCoords = true })
+eq(wc.width, 33 + 32, "coords add horizontal margin")
+eq(wc.height, 33 + 32, "coords add vertical margin")
+eq(app.pixelColor.rgbaR(wc:getPixel(24, 24)), 255, "bead shifted by margin")
+eq(app.pixelColor.rgbaB(wc:getPixel(24, 24)), 0, "bead red shifted by margin")
+eq(app.pixelColor.rgbaR(wc:getPixel(23, 6)), 0, "top label 1 drawn")
+eq(app.pixelColor.rgbaR(wc:getPixel(22, 54)), 0, "bottom label mirrored 2 drawn")
+eq(app.pixelColor.rgbaR(wc:getPixel(55, 21)), 0, "right label mirrored 2 drawn")
+eq(app.pixelColor.rgbaR(wc:getPixel(7, 21)), 0, "left label 1 drawn")
