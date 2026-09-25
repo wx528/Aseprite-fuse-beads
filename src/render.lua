@@ -38,7 +38,7 @@ local function textColorFor(rgb)
 end
 
 local function fitScale(text, cell)
-  local maxW = math.floor(cell * 0.6)
+  local maxW = math.floor(cell * 0.8)
   local maxH = math.floor(cell * 0.4)
   local s = math.max(1, math.floor(cell / 8))
   while s > 1 do
