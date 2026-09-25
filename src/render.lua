@@ -37,9 +37,9 @@ local function textColorFor(rgb)
   return white()
 end
 
-local function fitScale(text, cell)
-  local maxW = math.floor(cell * 0.8)
-  local maxH = math.floor(cell * 0.4)
+local function fitScale(text, cell, wf, hf)
+  local maxW = math.floor(cell * (wf or 0.8))
+  local maxH = math.floor(cell * (hf or 0.4))
   local s = math.max(1, math.floor(cell / 8))
   while s > 1 do
     local w, h = Font.measure(text, s)
@@ -90,26 +90,15 @@ function Render.render(srcImg, matches, opts)
   local cell = opts.cell or 32
   local beadRatio = opts.beadRatio or 0.9
   local usage = Render.countUsage(matches)
-  local PER_COL = 5
-  local statCols = opts.showStats and math.ceil(#usage / PER_COL) or 0
-  local statsRows = opts.showStats and math.min(#usage, PER_COL) or 0
-
-  local maxLabelW = 0
-  if opts.showStats then
-    for _, u in ipairs(usage) do
-      local label = u.entry.code .. " X " .. u.count
-      local tw = Font.measure(label, fitScale(label, cell))
-      if tw > maxLabelW then maxLabelW = tw end
-    end
-  end
+  local perRow = math.max(1, cols)
+  local countH = math.floor(cell / 2)
+  local blockH = cell + countH
+  local statsRows = opts.showStats and math.ceil(#usage / perRow) or 0
 
   local margin = opts.showCoords and cell or 0
 
   local W = margin * 2 + cols * cell + 1
-  if statCols > 0 then
-    W = math.max(W, margin + statCols * (cell + 2 + maxLabelW))
-  end
-  local H = margin * 2 + rows * cell + 1 + statsRows * cell
+  local H = margin * 2 + rows * cell + 1 + statsRows * blockH
   local out = Image(W, H, ColorMode.RGB)
   for px in out:pixels() do
     px(white())
@@ -207,22 +196,29 @@ function Render.render(srcImg, matches, opts)
 
   if opts.showStats then
     local top = oy + rows * cell + 1 + margin
-    local colWidth = cell + 2 + maxLabelW
     for i, u in ipairs(usage) do
-      local col = math.floor((i - 1) / PER_COL)
-      local row = (i - 1) % PER_COL
-      local x0 = margin + col * colWidth
-      local rowTop = top + row * cell
+      local col = (i - 1) % perRow
+      local row = math.floor((i - 1) / perRow)
+      local x0 = margin + col * cell
+      local y0 = top + row * blockH
       local swColor = app.pixelColor.rgba(u.entry.rgb.r, u.entry.rgb.g, u.entry.rgb.b, 255)
-      for sy = 2, cell - 3 do
-        for sx = 2, cell - 3 do
-          out:drawPixel(x0 + sx, rowTop + sy, swColor)
+      local cr = math.floor(cell * 0.2)
+      for py = 0, cell - 1 do
+        for px = 0, cell - 1 do
+          local dx = math.max(0, cr - px, px - (cell - 1 - cr))
+          local dy = math.max(0, cr - py, py - (cell - 1 - cr))
+          if dx * dx + dy * dy <= cr * cr then
+            out:drawPixel(x0 + px, y0 + py, swColor)
+          end
         end
       end
-      local label = u.entry.code .. " X " .. u.count
-      local s = fitScale(label, cell)
-      local tw, th = Font.measure(label, s)
-      Font.draw(out, x0 + cell + 2, rowTop + math.floor((cell - th) / 2), label, s, black())
+      local s = fitScale(u.entry.code, cell, 0.875, 0.5)
+      local tw, th = Font.measure(u.entry.code, s)
+      Font.draw(out, x0 + math.floor((cell - tw) / 2), y0 + math.floor((cell - th) / 2), u.entry.code, s, textColorFor(u.entry.rgb))
+      local cnt = tostring(u.count)
+      local cs = fitScale(cnt, cell)
+      local cw, ch = Font.measure(cnt, cs)
+      Font.draw(out, x0 + math.floor((cell - cw) / 2), y0 + cell + math.floor((countH - ch) / 2), cnt, cs, black())
     end
   end
 

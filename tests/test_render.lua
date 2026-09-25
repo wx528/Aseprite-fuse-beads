@@ -34,14 +34,13 @@ eq(app.pixelColor.rgbaR(emptyCell), 255, "transparent cell stays white")
 eq(app.pixelColor.rgbaG(emptyCell), 255, "transparent cell green white")
 
 local out2 = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(out2.height, 33 + 2 * 16, "stats adds one row per used color")
+eq(out2.height, 33 + 24, "stats one row of chip+count blocks")
 local swatch = out2:getPixel(7, 41)
 eq(app.pixelColor.rgbaR(swatch), 255, "first stats swatch is red")
 
 local Font = dofile(here .. "/../src/font.lua")
 local out3 = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = true })
-local labelW = select(1, Font.measure("A1 X 2", 1))
-eq(out3.width, math.max(33, 16 + 2 + labelW), "stats width accommodates label")
+eq(out3.width, 33, "stats fit inside board width")
 
 local big = Render.render(src, matches, { cell = 32, beadRatio = 0.9, showStats = false })
 local aboveText = big:getPixel(4, 19)
@@ -53,7 +52,7 @@ local sparseUsage = Render.countUsage(sparse)
 eq(#sparseUsage, 2, "sparse matches: two colors counted")
 if #sparseUsage == 2 then eq(sparseUsage[1].count, 1, "sparse matches: count is 1") end
 local outSparse = Render.render(src, sparse, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(outSparse.height, 33 + 2 * 16, "sparse matches: stats rows add height")
+eq(outSparse.height, 33 + 24, "sparse matches: stats row adds height")
 
 local sqc = out:getPixel(1, 1)
 eq(app.pixelColor.rgbaG(sqc), 0, "square bead fills interior corner by default")
@@ -88,10 +87,9 @@ for i = 1, 7 do
 end
 local src7 = Image(7, 1, ColorMode.RGB)
 local out7 = Render.render(src7, m7, { cell = 16, beadRatio = 0.9, showStats = true })
-eq(out7.height, 17 + 5 * 16, "stats column capped at 5 rows")
-local labelW7 = select(1, Font.measure("A6 X 1", 1))
-local colW = 16 + 2 + labelW7
-eq(app.pixelColor.rgbaR(out7:getPixel(colW + 4, 17 + 3)), 180, "6th entry starts second column")
+eq(out7.height, 17 + 24, "stats row-major one row when entries fit")
+eq(app.pixelColor.rgbaR(out7:getPixel(5 * 16 + 2, 17 + 2)), 180, "6th entry chip at column 5 same row")
+eq(app.pixelColor.rgbaR(out2:getPixel(6, 50)), 0, "count drawn below chip")
 
 local wc = Render.render(src, matches, { cell = 16, beadRatio = 0.9, showStats = false, showCoords = true })
 eq(wc.width, 33 + 32, "coords add horizontal margin")
